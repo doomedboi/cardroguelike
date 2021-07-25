@@ -5,21 +5,36 @@
     <meta charset="utf-8" />
     <title>CardRougeLike</title>
     <style>
+        startScreen {
+            justify-content: center;
+        }
         * {
             padding: 0;
             margin: 0;
         }
-        
         canvas {
             background-image: url(resources/bg.jpg);
-            display: block;
             margin: 0 auto;
         }
+        #gameScreen {
+            display: none;
+        }
+        #createdGameId { display: none}
     </style>
 </head>
 
 <body>
-    <canvas id="myCanvas" width="600" height=800></canvas>
+    <div id="startScreen">
+        <h1>START SCREEN PAGE</h1>
+        <button id="newGameBtn" type="submit">Create new game</button>
+        <span id="createdGameId"></span>
+        <br> <a>or</a> <br> <a>Join game via invite-code</a>
+        <input id="joinGameId"> <br>
+        <button id="joinGameBtn" type="submit">Join game</button>
+    </div>
+    <div id="gameScreen">
+        <canvas id="myCanvas"></canvas>
+    </div>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"
             integrity="sha384-DkkWv9oJFWLIydBXXjkBWnG1/fuVhw8YPBq37uvvD6WSYRFRqr21eY5Dg9ZhmWdy"
             crossorigin="anonymous"></script>
