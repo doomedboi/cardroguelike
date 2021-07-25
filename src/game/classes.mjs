@@ -124,12 +124,15 @@ export class GameTable {//класс игрового стола, и его со
         return true;
     }
     generateNameEntityForBarrelSpawn(){
-        let generateSeed = (this.TotalCounterEntityes+this.seed)%5;
+        let generateSeed = this.getPseudoRandomInt()%5;
         let nameEntity = Barrel.BARREL_ENTITYES[generateSeed];
         return nameEntity;
     }
+    getPseudoRandomInt(){
+        return (Math.trunc(Math.pow(this.TotalCounterEntityes + this.seed, 2) / (this.TotalCounterEntityes + 1)));
+    }
     generateEntity(x,y, target = false){
-        let generateSeed = Math.pow(this.TotalCounterEntityes+this.seed,this.TotalCounterEntityes%15)%GameTable.COUNTS_OF_ENTITYES; //6 - количество вариантов сущностей
+        let generateSeed = this.getPseudoRandomInt()    %    GameTable.COUNTS_OF_ENTITYES; //6 - количество вариантов сущностей
         let nameEntity = GameTable.ENUM_ENTITYES[generateSeed];
         if(target != false){
             nameEntity = target;
