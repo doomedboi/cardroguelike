@@ -2,16 +2,19 @@ export const Sprites = { //здесь находятся все объекты �
     emptyEntityImg: new Image(),
     tableImg: new Image(),
     player1Img: new Image(),
+    characterBackground: new Image(),
     npcSkeleton: new Image(),
     coins: new Image(),
     barrel: new Image(),
     weapon: new Image(),
     potion: new Image(),
     trap: new Image(),
+    entityBackground: new Image(),
     //...
     //...
     initial() {//здесь они инициализируются. 
         //Возможно стоит вынести эти пути в отдельный файл json
+        this.characterBackground.src = "resources/Character_background.png";
         this.player1Img.src = "resources/Player1.png";
         this.npcSkeleton.src = "resources/Skeleton.png";
         this.emptyEntityImg.src = "resources/EmptyEntity.png";
@@ -21,6 +24,7 @@ export const Sprites = { //здесь находятся все объекты �
         this.weapon.src = "resources/Weapon.png";
         this.trap.src = "resources/Trap.png";
         this.potion.src = "resources/Potion.png";
+        this.entityBackground.src = "resources/Entity_background.png"
         //...
         //...
     }
@@ -53,7 +57,6 @@ export class GameTable {//класс игрового стола, и его со
             }
         }
     }
-    /* return type: boolean */
     validMove(src, dst) {
         console.log(src)
         console.log(dst)
@@ -63,7 +66,6 @@ export class GameTable {//класс игрового стола, и его со
             return true
         return false
     }
-
     deleteEntity(someEntity, filingDirection = EmptyEntity.DIRECTION.ABOWE) {
         this.matrix[someEntity.x][someEntity.y] = new EmptyEntity("someID", someEntity.x, someEntity.y, Sprites.emptyEntityImg, filingDirection);
     }
@@ -111,8 +113,8 @@ export class GameTable {//класс игрового стола, и его со
     }
     getEntityByCoordinates(X,Y){//получаем сущность по координатам точки экрана
         return this.getEntity(
-            Math.trunc((X-GameTable.XABSOLUTE)/GameTable.CELLSIZE),
-            Math.trunc((Y-GameTable.YABSOLUTE)/GameTable.CELLSIZE)
+                                Math.trunc((X-GameTable.XABSOLUTE)/GameTable.CELLSIZE),
+                                Math.trunc((Y-GameTable.YABSOLUTE)/GameTable.CELLSIZE)
         );
     }
     calculateCombat(firstCharacter, secondCharacter) {  //вся механика сражения описывается здесь. В процессе реализации...
@@ -151,32 +153,32 @@ export class GameTable {//класс игрового стола, и его со
         switch(nameEntity){
             case "Monster":
                 this.matrix[x][y] = new Monster("Skeleton" + this.TotalCounterEntityes+1,x,y,Sprites.npcSkeleton,3,6, 6, 1);//типа спавним скелета
-                break;
+            break;
             case "Coins":
                 this.matrix[x][y] = new Coins(this.TotalCounterEntityes+'Coins',x,y,Sprites.coins,1);
                 break;
             case "Barrel":
                 this.matrix[x][y] = new Barrel(this.TotalCounterEntityes+"Barrel",x,y,Sprites.barrel,this.generateNameEntityForBarrelSpawn());
-                break;
+            break;
             case "Potion":
                 this.matrix[x][y] = new Potion(this.TotalCounterEntityes+"Potion",x,y,Sprites.potion,5);
-                break;
+            break;
             case "Trap":
                 this.matrix[x][y] = new Trap(this.TotalCounterEntityes+"Weapon",x,y,Sprites.trap,3);
-                break;
+            break;
             case "Weapon":
                 this.matrix[x][y] = new Weapon(this.TotalCounterEntityes+"Weapon",x,y,Sprites.weapon,6)
-                break;
+            break;
             default:
                 this.matrix[x][y] = new Monster("Skeleton" + this.TotalCounterEntityes+1,x,y,Sprites.npcSkeleton,3,6, 6, 1);
                 throw new Error("ошибка генерации сущности");
         }
         this.TotalCounterEntityes++;
         return true;
-    }
+    }  
     interactIsPossible(firstEntity,secondEntity){
         return true;//проверка на соседство, сделаем позже
-    }
+    } 
     interact(firstEntity, secondEntity) {
         if (!(this.interactIsPossible(firstEntity, secondEntity)))return false;
         let secondProperties = secondEntity.getProperties();
@@ -232,7 +234,7 @@ export class GameTable {//класс игрового стола, и его со
                     firstEntity.gold += secondEntity.countOfCoins;
                     this.deleteEntity(secondEntity,
                         EmptyEntity.getDirection(firstEntity.x, firstEntity.y, secondEntity.x, secondEntity.y)
-                    );
+                        );
                     this.moveEntity(firstEntity, secondProperties.x, secondProperties.y);
             }
         } else if (firstEntity.EntityType === "Monster") {
@@ -244,11 +246,11 @@ export class GameTable {//класс игрового стола, и его со
         }
     }
     draw(context) {
-        //грубая функция отрисовки которая вызывает функцию отрисовки
-        //у каждой сущности игрового поля.
+            //грубая функция отрисовки которая вызывает функцию отрисовки 
+            //у каждой сущности игрового поля.
         for (let x = 0; x < this.width; x++) {
             for (let y = 0; y < this.height; y++) {
-                this.matrix[x][y].draw(context);
+                    this.matrix[x][y].draw(context);
             }
         }
     }
@@ -262,13 +264,18 @@ export class Entity {  //сущность объекта игрового сто
         this.sprite = sprite;
     }
     draw(context) {
+        context.drawImage(Sprites.entityBackground,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE,
+            GameTable.CELLSIZE,
+            GameTable.CELLSIZE);
         context.drawImage(this.sprite,GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE, GameTable.CELLSIZE, GameTable.CELLSIZE);
     }
     getProperties() {
         return { name: this.id, x: this.x, y: this.y, sprite: this.sprite };
     }
 }
-export class EmptyEntity extends Entity {   //пустая сущность. Получается, например, при убийстве нпс,
+export class EmptyEntity extends Entity {   //пустая сущность. Получается, например, при убийстве нпс, 
     static DIRECTION = {                    //на его месте Изначально заполняем ей игровой стол.
         BELOW: 0,
         ABOWE: 1,
@@ -300,15 +307,19 @@ export class Character extends Entity {//от этого класса насле
     }
     draw(context) {   //В процессе реализации...
         super.draw(context);
-        context.font = "15px serif"
-        context.fillText("⚔️" + this.attack,
+        context.drawImage(Sprites.characterBackground,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE,
+            GameTable.CELLSIZE,
+            GameTable.CELLSIZE);
+        context.font = "15px serif";
+        /*context.fillText("⚔️" + this.attack,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + 10,
             GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE + GameTable.CELLSIZE-10,
-        );
+            );
         context.fillText("❤️" + this.health,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
-            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-10,
-        );
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-10,)*/
     }
     decreaseHealth(value) {
         this.health = this.health - value;
@@ -353,6 +364,9 @@ export class Weapon extends Entity {
         this.EntityType = "Weapon";
         this.powerOfWeapon = powerOfWeapon;
     }
+    draw(context) {
+        super.draw(context);
+    }
 }
 export class Potion extends Entity {
     constructor(id, x, y, sprite, powerOfPotion) {
@@ -381,6 +395,9 @@ export class Barrel extends Entity{
         super(id, x, y, sprite);
         this.EntityType = "Barrel";
         this.nameSpawnableEntity = nameSpawnableEntity;
+    }
+    draw(context) {
+        super.draw(context);
     }
 }
 // class SingleplayerGameController{
