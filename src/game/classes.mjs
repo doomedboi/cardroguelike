@@ -2,16 +2,19 @@ export const Sprites = { //здесь находятся все объекты �
     emptyEntityImg: new Image(),
     tableImg: new Image(),
     player1Img: new Image(),
+    characterBackground: new Image(),
     npcSkeleton: new Image(),
     coins: new Image(),
     barrel: new Image(),
     weapon: new Image(),
     potion: new Image(),
     trap: new Image(),
+    structureBackground: new Image(),
     //...
     //...
     initial() {//здесь они инициализируются. 
         //Возможно стоит вынести эти пути в отдельный файл json
+        this.characterBackground.src = "resources/Character_background.png";
         this.player1Img.src = "resources/Player1.png";
         this.npcSkeleton.src = "resources/Skeleton.png";
         this.emptyEntityImg.src = "resources/EmptyEntity.png";
@@ -21,6 +24,7 @@ export const Sprites = { //здесь находятся все объекты �
         this.weapon.src = "resources/Weapon.png";
         this.trap.src = "resources/Trap.png";
         this.potion.src = "resources/Potion.png";
+        this.structureBackground.src = "resources/Structure_background.png"
         //...
         //...
     }
@@ -288,16 +292,20 @@ export class Character extends Entity {//от этого класса насле
         this.tier = tier;
     }
     draw(context) {   //В процессе реализации...
+        context.drawImage(Sprites.characterBackground,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE,
+            GameTable.CELLSIZE,
+            GameTable.CELLSIZE);
         super.draw(context);
-        context.font = "15px serif"
-        context.fillText("⚔️" + this.attack,
+        context.font = "15px serif";
+        /*context.fillText("⚔️" + this.attack,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + 10,
             GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE + GameTable.CELLSIZE-10,
             );
         context.fillText("❤️" + this.health,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
-            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-10,
-        );
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-10,)*/
     }
     decreaseHealth(value) {
         this.health = this.health - value;
@@ -370,6 +378,14 @@ export class Barrel extends Entity{
         super(id, x, y, sprite);
         this.EntityType = "Barrel";
         this.nameSpawnableEntity = nameSpawnableEntity;
+    }
+    draw(context) {
+        context.drawImage(Sprites.structureBackground,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE,
+            GameTable.CELLSIZE,
+            GameTable.CELLSIZE);
+        super.draw(context);
     }
 }
 // class SingleplayerGameController{
