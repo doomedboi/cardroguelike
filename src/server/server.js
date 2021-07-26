@@ -18,7 +18,7 @@ io.on('connection', client => {
     client.on('generateGame', handleGenerateGame)
 
     function handleMakeMove(room, state) {
-        console.log('you can see me in the')
+        console.log('state in handle makeMove')
         console.log(state)
         io.sockets.in(room).emit('mustMove', state)
         //отослать обоим клиентам ответ: выполни функцию хода
@@ -44,7 +44,7 @@ io.on('connection', client => {
         client.join(roomId)
         rooms[client.id] = roomId
         client.number = 2
-        client.emit('init', 2)
+        client.emit('init', 1)
         console.log(rooms)
 
     }
@@ -53,7 +53,7 @@ io.on('connection', client => {
         let roomId = randomStr(10).toString()
         client.join(roomId)
         client.number = 1
-        client.emit('init', 1)
+        client.emit('init', 0)
         console.log(io.sockets.adapter.rooms.has(roomId))
         rooms[client.id] = roomId
         //send back
