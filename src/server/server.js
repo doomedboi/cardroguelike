@@ -14,8 +14,22 @@ const {createGameState, mainGameLoop} = require("./game")
 io.on('connection', client => {
     client.on('newGame', handleNewGame)
     client.on('joinRoom', handleJoinRoom)
+    client.on('makeMove', handleMakeMove)
+    client.on('generateGame', handleGenerateGame)
+
+    function handleMakeMove(room, state) {
+        console.log('you can see me in the')
+        console.log(state)
+        io.sockets.in(room).emit('mustMove', state)
+        //отослать обоим клиентам ответ: выполни функцию хода
+    }
+
+    function handleGenerateGame(room) {
+        io.sockets.in(room).emit('generateGame')
+    }
 
     function handleJoinRoom(roomId) {
+        console.log(roomId)
         //grab room via sockets ability
         if(!io.sockets.adapter.rooms.has(roomId)) {
             client.emit('invalidGameToken')
@@ -32,10 +46,11 @@ io.on('connection', client => {
         client.number = 2
         client.emit('init', 2)
         console.log(rooms)
+
     }
 
     function handleNewGame() {
-        let roomId = randomStr(3)
+        let roomId = randomStr(10).toString()
         client.join(roomId)
         client.number = 1
         client.emit('init', 1)
