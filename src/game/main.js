@@ -41,9 +41,7 @@ function handleGenerateGame() {
 function handleRequestMove(state) {
     state = JSON.parse(state)
     gameController.desk.interact(gameController.desk.getEntity(state.fx, state.fy),gameController.desk.getEntity(state.sx, state.sy))
-    // switch id's to let make move other player
-    gameController.playerNumber = ( gameController.playerNumber + 1 ) % 2
-
+    gameController.nowAct = !gameController.nowAct
 }
 
 function handleInvalidGame() {
@@ -88,12 +86,12 @@ function initCanvas() {
     canvas.width = 1000
     canvas.height = 1000
     ctx.fillRect(0, 0, canvas.width, canvas.height)
+    requestAnimationFrame(draw)
 }
 
 function prepaireBefGame() {
     unhideMainPage()
     initCanvas()
-    canvasId = setInterval(draw, 1000 / 10); //1 ms / frame count in sec = 1 frame interval
 }
 
 function unhideMainPage() {
@@ -105,7 +103,8 @@ function unhideMainPage() {
 /* init game when players are ready */
 function initGame(row, col, ssid) {
     gameController = new GameController(playerNumber)
-    gameController.desk.spawnPlayer(0,0);
+    gameController.desk.spawnPlayer(0,0, 0)
+    gameController.desk.spawnPlayer(1,5,5)
     document.addEventListener("mouseup", mouseUpHandler, false);
     gameStart = true
 
@@ -141,6 +140,7 @@ function draw() {
     if (gameStart)
         gameController.desk.draw(ctx);
     ctx.closePath();
+    requestAnimationFrame(draw)
 }
 
 function mouseUpHandler(e) {
@@ -154,14 +154,18 @@ function mouseUpHandler(e) {
 class GameController {
     constructor(playerNumber) {
         this.playerNumber = playerNumber
+        this.nowAct = (playerNumber === 1)
         Sprites.initial();
-        this.desk = new GameTable(93930491,6,6,Sprites.tableImg);
+        this.desk = new GameTable(93930493,6,6,Sprites.tableImg);
     }
 
     interact(xPos, yPos) {
+        console.log("interact for ", this.playerNumber)
+        const player = this.desk.getPlayerById(this.playerNumber)
+        console.log("\nplayer: ", player)
         let targetEntity = this.desk.getEntityByCoordinates(xPos,yPos);
-        if (this.playerNumber === 1 && this.desk.validMove(this.desk.getPlayer1(), targetEntity)) { //getPlayer(ид нужного игрока)
-            this.requestMove(this.desk.matrix[this.desk.getPlayer1().x][this.desk.getPlayer1().y], this.desk.matrix[targetEntity.x][targetEntity.y])
+        if (this.nowAct && this.desk.validMove(player, targetEntity)) { //getPlayer(ид нужного игрока)
+            this.requestMove(this.desk.matrix[player.x][player.y], this.desk.matrix[targetEntity.x][targetEntity.y])
         }
     }
 

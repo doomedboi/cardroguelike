@@ -127,34 +127,23 @@ export class GameTable {//класс игрового стола, и его со
         firstCharacter.decreaseHealth(secondCharacter.attack);
         secondCharacter.decreaseHealth(firstCharacter.attack);
     }
-    getPlayer1(){
+
+    getPlayerById(id){
+        const idName = "Player" + id
         for (let x = 0; x < this.width; x++) {
             for (let y = 0; y < this.height; y++) {
-                if(this.matrix[x][y].EntityType === "Player" && this.matrix[x][y].id === "Player1"){
+                if(this.matrix[x][y].EntityType === "Player" && this.matrix[x][y].id === idName){
                     return this.matrix[x][y]
                 }
-
             }
         }
     }
-    getPlayer2(){
-        for (let x = 0; x < this.width; x++) {
-            for (let y = 0; y < this.height; y++) {
-                if(this.matrix[x][y].EntityType === "Player" && this.matrix[x][y].id === "Player2"){
-                    return this.matrix[x][y]
-                }
 
-            }
-        }
-    }
-    spawnPlayer1(x,y){
+    spawnPlayer(id, x, y){
         if(!(x>=0&&x<this.width&&y>=0&&y<this.height))return false;
-        this.matrix[x][y] = new Player('Player1',x,y,Sprites.player1Img,1,10,10,0);
-        return true;
-    }
-    SpawnPlayer2(x,y){
-        if(!(x>=0&&x<this.width&&y>=0&&y<this.height))return false;
-        this.matrix[x][y] = new Player('Player2',x,y,Sprites.player2Img,1,10,10,0);
+        this.matrix[x][y] = new Player('Player' + id, x, y,
+            (id === 1)? Sprites.player1Img : Sprites.player2Img,
+            1,10,10,0);
         return true;
     }
     generateNameEntityForBarrelSpawn(){
