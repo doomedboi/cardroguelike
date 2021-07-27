@@ -130,7 +130,17 @@ export class GameTable {//класс игрового стола, и его со
     getPlayer1(){
         for (let x = 0; x < this.width; x++) {
             for (let y = 0; y < this.height; y++) {
-                if(this.matrix[x][y].EntityType === "Player"){
+                if(this.matrix[x][y].EntityType === "Player" && this.matrix[x][y].id === "Player1"){
+                    return this.matrix[x][y]
+                }
+
+            }
+        }
+    }
+    getPlayer2(){
+        for (let x = 0; x < this.width; x++) {
+            for (let y = 0; y < this.height; y++) {
+                if(this.matrix[x][y].EntityType === "Player" && this.matrix[x][y].id === "Player2"){
                     return this.matrix[x][y]
                 }
 
