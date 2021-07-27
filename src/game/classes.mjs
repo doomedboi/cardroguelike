@@ -10,12 +10,16 @@ export const Sprites = { //здесь находятся все объекты �
     potion: new Image(),
     trap: new Image(),
     entityBackground: new Image(),
+    player2Img: new Image(),
+    necromancer: new Image(),
+    vermin: new Image(),
     //...
     //...
     initial() {//здесь они инициализируются. 
         //Возможно стоит вынести эти пути в отдельный файл json
         this.characterBackground.src = "resources/Character_background.png";
         this.player1Img.src = "resources/Player1.png";
+        this.player2Img.src = "resources/Player2.png";
         this.npcSkeleton.src = "resources/Skeleton.png";
         this.emptyEntityImg.src = "resources/EmptyEntity.png";
         this.tableImg.src = "resources/Table.png";
@@ -24,7 +28,9 @@ export const Sprites = { //здесь находятся все объекты �
         this.weapon.src = "resources/Weapon.png";
         this.trap.src = "resources/Trap.png";
         this.potion.src = "resources/Potion.png";
-        this.entityBackground.src = "resources/Entity_background.png"
+        this.entityBackground.src = "resources/Entity_background.png";
+        this.necromancer.src = "resources/Necromancer.png";
+        this.vermin.src = "resources/Vermin.png";
         //...
         //...
     }
@@ -44,7 +50,7 @@ export class GameTable {//класс игрового стола, и его со
     static XABSOLUTE = 220;//эти координаты относительно начала canvas, верхняя левая точка от которой рисуется все поле.
     static YABSOLUTE = 20;
     constructor(seed, width, height, sprite = Sprites.tableImg) {
-        this.TotalCounterEntityes = 0;
+        this.RandomCalls = 0;
         this.seed = seed;
         this.width = width;
         this.height = height;
@@ -131,9 +137,14 @@ export class GameTable {//класс игрового стола, и его со
             }
         }
     }
-    spawnPlayer(x,y){
+    spawnPlayer1(x,y){
         if(!(x>=0&&x<this.width&&y>=0&&y<this.height))return false;
-        this.matrix[x][y] = new Player('Player1',x,y,Sprites.player1Img,10,99,99,0);
+        this.matrix[x][y] = new Player('Player1',x,y,Sprites.player1Img,1,10,10,0);
+        return true;
+    }
+    SpawnPlayer2(x,y){
+        if(!(x>=0&&x<this.width&&y>=0&&y<this.height))return false;
+        this.matrix[x][y] = new Player('Player2',x,y,Sprites.player2Img,1,10,10,0);
         return true;
     }
     generateNameEntityForBarrelSpawn(){
@@ -142,7 +153,45 @@ export class GameTable {//класс игрового стола, и его со
         return nameEntity;
     }
     getPseudoRandomInt(){
-        return (Math.trunc(Math.pow(this.TotalCounterEntityes + this.seed, 2) / (this.TotalCounterEntityes + 1)));
+        this.RandomCalls++;
+        return (Math.trunc(Math.pow(this.RandomCalls + this.seed, 2) / (this.RandomCalls + 1)));
+    }
+    generateRandomMonster(x,y){
+        let ENUM_MONSTRES = {
+            0: "Skeleton",
+            1: "Vermin",
+            2: "Necromancer",
+        }
+        let newMonster = new Monster(this.RandomCalls,
+            x,y, 0,
+
+            ((this.getPseudoRandomInt()%9)+1),
+            ((this.getPseudoRandomInt()%9)+1),
+            0,
+            1,1);
+        switch (ENUM_MONSTRES[this.getPseudoRandomInt()%3]){
+            case "Necromancer":
+                newMonster.sprite = Sprites.necromancer;
+                newMonster.attack+=7;
+                newMonster.health+=7;
+                newMonster.maxhealth = newMonster.health;
+                newMonster.tier = 3;
+                newMonster.reward = 10;
+                break;
+            case "Skeleton":
+                newMonster.maxhealth = newMonster.health;
+                newMonster.sprite = Sprites.npcSkeleton;
+                break;
+            case "Vermin":
+                newMonster.sprite = Sprites.vermin;
+                newMonster.attack+=3;
+                newMonster.health+=3;
+                newMonster.maxhealth = newMonster.health;
+                newMonster.tier = 2;
+                newMonster.reward = 5;
+                break;
+        }
+        return newMonster;
     }
     generateEntity(x,y, target = false){
         let generateSeed = this.getPseudoRandomInt()    %    GameTable.COUNTS_OF_ENTITYES; //6 - количество вариантов сущностей
@@ -152,35 +201,31 @@ export class GameTable {//класс игрового стола, и его со
         }
         switch(nameEntity){
             case "Monster":
-                this.matrix[x][y] = new Monster("Skeleton" + this.TotalCounterEntityes+1,x,y,Sprites.npcSkeleton,3,6, 6, 1);//типа спавним скелета
+                this.matrix[x][y] = this.generateRandomMonster(x,y);
             break;
             case "Coins":
-                this.matrix[x][y] = new Coins(this.TotalCounterEntityes+'Coins',x,y,Sprites.coins,1);
+                this.matrix[x][y] = new Coins(this.RandomCalls+'Coins',x,y,Sprites.coins,1);
                 break;
             case "Barrel":
-                this.matrix[x][y] = new Barrel(this.TotalCounterEntityes+"Barrel",x,y,Sprites.barrel,this.generateNameEntityForBarrelSpawn());
+                this.matrix[x][y] = new Barrel(this.RandomCalls+"Barrel",x,y,Sprites.barrel,this.generateNameEntityForBarrelSpawn());
             break;
             case "Potion":
-                this.matrix[x][y] = new Potion(this.TotalCounterEntityes+"Potion",x,y,Sprites.potion,5);
+                this.matrix[x][y] = new Potion(this.RandomCalls+"Potion",x,y,Sprites.potion,this.getPseudoRandomInt()%5+1);
             break;
             case "Trap":
-                this.matrix[x][y] = new Trap(this.TotalCounterEntityes+"Weapon",x,y,Sprites.trap,3);
+                this.matrix[x][y] = new Trap(this.RandomCalls+"Weapon",x,y,Sprites.trap,this.getPseudoRandomInt()%5+1);
             break;
             case "Weapon":
-                this.matrix[x][y] = new Weapon(this.TotalCounterEntityes+"Weapon",x,y,Sprites.weapon,6)
+                this.matrix[x][y] = new Weapon(this.RandomCalls+"Weapon",x,y,Sprites.weapon,this.getPseudoRandomInt()%10+1)
             break;
             default:
-                this.matrix[x][y] = new Monster("Skeleton" + this.TotalCounterEntityes+1,x,y,Sprites.npcSkeleton,3,6, 6, 1);
+                this.matrix[x][y] = new Monster("Skeleton" + this.RandomCalls+1,x,y,Sprites.npcSkeleton,3,6, 6, 1);
                 throw new Error("ошибка генерации сущности");
         }
-        this.TotalCounterEntityes++;
+        this.RandomCalls++;
         return true;
-    }  
-    interactIsPossible(firstEntity,secondEntity){
-        return true;//проверка на соседство, сделаем позже
-    } 
+    }
     interact(firstEntity, secondEntity) {
-        if (!(this.interactIsPossible(firstEntity, secondEntity)))return false;
         let secondProperties = secondEntity.getProperties();
         if (firstEntity.EntityType === "Player") {
             switch (secondEntity.EntityType) {
@@ -312,14 +357,15 @@ export class Character extends Entity {//от этого класса насле
             GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE,
             GameTable.CELLSIZE,
             GameTable.CELLSIZE);
+        context.fillStyle = "#ffffff"
         context.font = "15px serif";
-        /*context.fillText("⚔️" + this.attack,
+        context.fillText("  ️" + this.health+'/' + this.maxhealth,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + 10,
-            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE + GameTable.CELLSIZE-10,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE + GameTable.CELLSIZE-5,
             );
-        context.fillText("❤️" + this.health,
+        context.fillText("   ️" + this.attack,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
-            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-10,)*/
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)
     }
     decreaseHealth(value) {
         this.health = this.health - value;
@@ -352,10 +398,16 @@ export class Player extends Character {    // Класс игрока, в про
     }
 }
 export class Coins extends Entity {
-    constructor(id, x, y, sprite = Sprites.Coins, countOfCoins) {
+    constructor(id, x, y, sprite = Sprites.coins, countOfCoins) {
         super(id, x, y, sprite);
         this.EntityType = "Coins";
         this.countOfCoins = countOfCoins;
+    }
+    draw(context){
+        super.draw(context)
+        context.fillText("   ️" + this.countOfCoins,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)
     }
 }
 export class Weapon extends Entity {
@@ -366,6 +418,9 @@ export class Weapon extends Entity {
     }
     draw(context) {
         super.draw(context);
+        context.fillText("   ️" + this.powerOfWeapon,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)
     }
 }
 export class Potion extends Entity {
@@ -374,12 +429,24 @@ export class Potion extends Entity {
         this.EntityType = "Potion";
         this.powerOfPotion = powerOfPotion;
     }
+    draw(context){
+        super.draw(context)
+        context.fillText("   ️" + this.powerOfPotion,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)
+    }
 }
 export class Trap extends Entity {
     constructor(id, x, y, sprite, powerOfTrap) {
         super(id, x, y, sprite);
         this.EntityType = "Trap";
         this.powerOfTrap = powerOfTrap;
+    }
+    draw(context){
+        super.draw(context)
+        context.fillText("   ️" + this.powerOfTrap,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)
     }
 }
 export class Barrel extends Entity{
@@ -400,47 +467,3 @@ export class Barrel extends Entity{
         super.draw(context);
     }
 }
-// class SingleplayerGameController{
-//     static controller = null;
-//     gameTable;
-//     turn;
-//     constructor(){
-//         if(!SingleplayerGameController.controller){
-//             SingleplayerGameController.controller = this;
-//         } else {
-//             return SingleplayerGameController.controller;
-//         }
-//     }
-//     createTable(seed,width,height,sprite = Sprites.tableImg){
-//         gameTable = new GameTable(seed,width,height,sprite);
-//     }
-//     startGame(){
-//         turn = 1;
-
-//     }
-// }
-// class OverTimeEffect {               Класс для эффектов на персонажах(бафы дебафы). Не реализован...
-//     constructor(typeOfEffect) {
-//     }
-// }
-// class GameControler {     //синглтон, пока не реализован
-//     static #onlyInstance = null;
-//     constructor() {
-//         if (!Singleton.#onlyInstance) {
-//             Singleton.#onlyInstance = this;
-//             this.gameTurn = 1;
-//         } else {
-//             return Singleton.#onlyInstance;
-//         }
-//     }
-// }
-// export class SingleplayerGameControler extends GameControler {
-//     constructor() {
-//         super();
-//     }
-// }
-// export class MultiplayerGameControler extends GameControler {
-//     constructor() {
-//         super();
-//     }
-// }
