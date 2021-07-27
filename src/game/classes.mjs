@@ -13,6 +13,7 @@ export const Sprites = { //здесь находятся все объекты �
     player2Img: new Image(),
     necromancer: new Image(),
     vermin: new Image(),
+    greenframe: new Image(),
     //...
     //...
     initial() {//здесь они инициализируются. 
@@ -31,6 +32,7 @@ export const Sprites = { //здесь находятся все объекты �
         this.entityBackground.src = "resources/Entity_background.png";
         this.necromancer.src = "resources/Necromancer.png";
         this.vermin.src = "resources/Vermin.png";
+        this.greenframe.src = "resources/Green.png";
         //...
         //...
     }
@@ -49,7 +51,10 @@ export class GameTable {//класс игрового стола, и его со
     static CELLSIZE = 100;
     static XABSOLUTE = 220;//эти координаты относительно начала canvas, верхняя левая точка от которой рисуется все поле.
     static YABSOLUTE = 20;
-    constructor(seed, width, height, sprite = Sprites.tableImg) {
+    constructor(seed, width, height, sprite = Sprites.tableImg,PlayerNumber) {
+        this.playerNumber = PlayerNumber;
+        this.turn = 0;
+        this.NearEntityes = false;
         this.RandomCalls = 0;
         this.seed = seed;
         this.width = width;
@@ -58,7 +63,6 @@ export class GameTable {//класс игрового стола, и его со
         this.matrix = new Array(height).fill().map(() => new Array(width).fill());
         for (let x = 0; x < this.width; x++) {
             for (let y = 0; y < this.height; y++) {
-                //this.matrix[x][y] = new EmptyEntity('emptyEntity' + x + '-' + y, x, y, Sprites.emptyEntityImg);
                 this.generateEntity(x,y);
             }
         }
@@ -288,6 +292,8 @@ export class GameTable {//класс игрового стола, и его со
         } else {
             return false; //---и---
         }
+        this.turn++;
+        this.NearEntityes =false;
     }
     draw(context) {
             //грубая функция отрисовки которая вызывает функцию отрисовки 
@@ -297,7 +303,34 @@ export class GameTable {//класс игрового стола, и его со
                     this.matrix[x][y].draw(context);
             }
         }
+        if(this.NearEntityes===false){
+        if (this.turn%2===0 && this.playerNumber ===1){
+            this.NearEntityes = this.getNearEntityes(1);
+        }
+        if (this.turn%2===1 && this.playerNumber ===0){
+            this.NearEntityes = this.getNearEntityes(0);
+        }}
+        let cur;
+        for(let key in this.NearEntityes){
+            cur = this.NearEntityes[key];
+            context.drawImage(Sprites.greenframe,GameTable.XABSOLUTE + cur.x * GameTable.CELLSIZE,GameTable.YABSOLUTE + cur.y * GameTable.CELLSIZE, GameTable.CELLSIZE, GameTable.CELLSIZE);
+
+        }
     }
+    getNearEntityes(id){
+        let player = this.getPlayerById(id);
+        let curEnt;
+        let arrayEntityes = [];
+        arrayEntityes.push(player);
+        curEnt = this.getEntity((player.x)+1,player.y)
+        if(curEnt!=false) arrayEntityes.push(curEnt);
+        curEnt = this.getEntity(player.x,(player.y)+1)
+        if(curEnt!=false) arrayEntityes.push(curEnt);
+        curEnt = this.getEntity((player.x)-1,player.y)
+        if(curEnt!=false) arrayEntityes.push(curEnt);
+        curEnt = this.getEntity(player.x,(player.y)-1)
+        if(curEnt!=false) arrayEntityes.push(curEnt);
+        return arrayEntityes;}
 }
 export class Entity {  //сущность объекта игрового стола, от которой наследуемся.
     constructor(id, x, y, sprite) {
@@ -308,13 +341,14 @@ export class Entity {  //сущность объекта игрового сто
         this.sprite = sprite;
     }
     draw(context) {
-        context.drawImage(Sprites.entityBackground,
-            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,
-            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE,
-            GameTable.CELLSIZE,
-            GameTable.CELLSIZE);
-        context.drawImage(this.sprite,GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE, GameTable.CELLSIZE, GameTable.CELLSIZE);
-    }
+            context.drawImage(Sprites.entityBackground,
+                GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,
+                GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE,
+                GameTable.CELLSIZE,
+                GameTable.CELLSIZE);
+            context.drawImage(this.sprite,GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE, GameTable.CELLSIZE, GameTable.CELLSIZE);
+        }
+
     getProperties() {
         return { name: this.id, x: this.x, y: this.y, sprite: this.sprite };
     }
@@ -442,7 +476,7 @@ export class Trap extends Entity {
         this.powerOfTrap = powerOfTrap;
     }
     draw(context){
-        super.draw(context)
+        super.draw(context);
         context.fillText("   ️" + this.powerOfTrap,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
             GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)

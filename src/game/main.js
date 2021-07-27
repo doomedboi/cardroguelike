@@ -155,8 +155,8 @@ class GameController {
     constructor(playerNumber) {
         this.playerNumber = playerNumber
         this.nowAct = (playerNumber === 1)
-        Sprites.initial();
-        this.desk = new GameTable(93930493,6,6,Sprites.tableImg);
+        Sprites.initial()
+        this.desk = new GameTable(93930493,6,6,Sprites.tableImg,playerNumber);
     }
 
     interact(xPos, yPos) {
