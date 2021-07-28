@@ -63,7 +63,8 @@ export class GameTable {//класс игрового стола, и его со
     static CELLSIZE = 100;
     static XABSOLUTE = 220;//эти координаты относительно начала canvas, верхняя левая точка от которой рисуется все поле.
     static YABSOLUTE = 20;
-    constructor(seed, width, height, sprite = Sprites.tableImg,PlayerNumber) {
+    constructor(seed, width, height, sprite = Sprites.tableImg,PlayerNumber,multiplayerMode = true) {
+        this.singleplayer = !multiplayerMode;
         this.playerNumber = PlayerNumber;
         this.turn = 0;
         this.NearEntityes = false;
@@ -378,7 +379,7 @@ export class GameTable {//класс игрового стола, и его со
     draw(context) {
         context.drawImage(Sprites.desk,
             GameTable.XABSOLUTE - 12,
-            GameTable.YABSOLUTE -12,
+            GameTable.YABSOLUTE - 12,
             GameTable.CELLSIZE*6 + 24,
             GameTable.CELLSIZE*6 + 24,)
             //грубая функция отрисовки которая вызывает функцию отрисовки 
@@ -393,7 +394,7 @@ export class GameTable {//класс игрового стола, и его со
         if (this.turn%2===0 && this.playerNumber ===1){
             this.NearEntityes = this.getNearEntityes(1);
         }
-        if (this.turn%2===1 && this.playerNumber ===0){
+        if (this.turn%2===1 && this.playerNumber ===0 || this.singleplayer===true){
             this.NearEntityes = this.getNearEntityes(0);
         }}
         let cur;
