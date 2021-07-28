@@ -1,4 +1,5 @@
 export const Sprites = { //здесь находятся все объекты спрайтов. !!В БУДУЩЕМ ПЕРЕДЕЛАТЬ В СИНГЛТОН КЛАСС
+    desk: new Image(),
     emptyEntityImg: new Image(),
     tableImg: new Image(),
     player1Img: new Image(),
@@ -22,6 +23,7 @@ export const Sprites = { //здесь находятся все объекты �
     //...
     initial() {//здесь они инициализируются. 
         //Возможно стоит вынести эти пути в отдельный файл json
+        this.desk.src = "resources/Desk.png"
         this.characterBackground.src = "resources/Character_background.png";
         this.player1Img.src = "resources/Player1.png";
         this.player2Img.src = "resources/Player2.png";
@@ -374,6 +376,11 @@ export class GameTable {//класс игрового стола, и его со
         this.NearEntityes =false;
     }
     draw(context) {
+        context.drawImage(Sprites.desk,
+            GameTable.XABSOLUTE - 12,
+            GameTable.YABSOLUTE -12,
+            GameTable.CELLSIZE*6 + 24,
+            GameTable.CELLSIZE*6 + 24,)
             //грубая функция отрисовки которая вызывает функцию отрисовки 
             //у каждой сущности игрового поля.
         for (let x = 0; x < this.width; x++) {
