@@ -84,7 +84,7 @@ function initCanvas() {
     ctx = canvas.getContext('2d')
     ctx.font = "30px serif";
     canvas.width = 1000
-    canvas.height = 1000
+    canvas.height = innerHeight
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     requestAnimationFrame(draw)
 }
@@ -166,6 +166,9 @@ class GameController {
         let targetEntity = this.desk.getEntityByCoordinates(xPos,yPos);
         if (this.nowAct && this.desk.validMove(player, targetEntity)) { //getPlayer(ид нужного игрока)
             this.requestMove(this.desk.matrix[player.x][player.y], this.desk.matrix[targetEntity.x][targetEntity.y])
+            if (this.desk.getPlayerById(this.playerNumber).isDead()) {
+                //handle game over
+            }
         }
     }
 

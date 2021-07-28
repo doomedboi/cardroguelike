@@ -471,6 +471,11 @@ export class Character extends Entity {//от этого класса насле
         this.tier = tier;
         this.shield = 0;
     }
+
+    isDead() {
+        return this.health <= 0;
+    }
+
     draw(context) {   //В процессе реализации...
         super.draw(context);
         context.drawImage(this.HUD,
@@ -534,6 +539,7 @@ export class Player extends Character {    // Класс игрока, в про
         this.gold += reward.gold;
         this.experience += reward.experience;
     }
+
     draw(context){
         super.draw(context);
         context.fillText("   ️" + this.gold,
