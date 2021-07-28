@@ -14,6 +14,8 @@ export const Sprites = { //здесь находятся все объекты �
     necromancer: new Image(),
     vermin: new Image(),
     greenframe: new Image(),
+    shield1: new Image(),
+    shieldHUD: new Image(),
     //...
     //...
     initial() {//здесь они инициализируются. 
@@ -33,12 +35,14 @@ export const Sprites = { //здесь находятся все объекты �
         this.necromancer.src = "resources/Necromancer.png";
         this.vermin.src = "resources/Vermin.png";
         this.greenframe.src = "resources/Green.png";
+        this.shield1.src = "resources/Shield1.png";
+        this.shieldHUD.src = "resources/ShieldHUD.png"
         //...
         //...
     }
 }
 export class GameTable {//класс игрового стола, и его событий
-    static COUNTS_OF_ENTITYES = 6;
+    static COUNTS_OF_ENTITYES = 7;
     static ENUM_ENTITYES = {                    //на его месте Изначально заполняем ей игровой стол.
         0: "Monster",
         1: "Weapon",
@@ -46,6 +50,7 @@ export class GameTable {//класс игрового стола, и его со
         3: "Barrel",
         4: "Potion",
         5: "Trap",
+        6: "Shield"
         //...
     };
     static CELLSIZE = 100;
@@ -128,8 +133,28 @@ export class GameTable {//класс игрового стола, и его со
         );
     }
     calculateCombat(firstCharacter, secondCharacter) {  //вся механика сражения описывается здесь. В процессе реализации...
-        firstCharacter.decreaseHealth(secondCharacter.attack);
-        secondCharacter.decreaseHealth(firstCharacter.attack);
+        if(secondCharacter.shield>0){
+            secondCharacter.shield -= firstCharacter.attack;
+            if(secondCharacter.shield<0){
+                secondCharacter.decreaseHealth(-secondCharacter.shield);
+            }
+        }else if (secondCharacter.shield === 0) {
+            secondCharacter.decreaseHealth(firstCharacter.attack);
+        }else{
+            throw new Error("Отрицательное значение щита перед боем");
+        }
+        if(firstCharacter.shield>0){
+            firstCharacter.shield -= secondCharacter.attack;
+            if(firstCharacter.shield<0){
+                firstCharacter.decreaseHealth(-firstCharacter.shield);
+            }
+        }else if (firstCharacter.shield === 0) {
+            firstCharacter.decreaseHealth(secondCharacter.attack);
+        }else{
+            throw new Error("Отрицательное значение щита перед боем");
+        }
+        firstCharacter.decreaseAttack(1);
+        secondCharacter.decreaseAttack(1);
     }
 
     getPlayerById(id){
@@ -151,9 +176,8 @@ export class GameTable {//класс игрового стола, и его со
         return true;
     }
     generateNameEntityForBarrelSpawn(){
-        let generateSeed = this.getPseudoRandomInt()%5;
-        let nameEntity = Barrel.BARREL_ENTITYES[generateSeed];
-        return nameEntity;
+        let generateSeed = this.getPseudoRandomInt()%6;
+        return Barrel.BARREL_ENTITYES[generateSeed];;
     }
     getPseudoRandomInt(){
         this.RandomCalls++;
@@ -221,6 +245,9 @@ export class GameTable {//класс игрового стола, и его со
             case "Weapon":
                 this.matrix[x][y] = new Weapon(this.RandomCalls+"Weapon",x,y,Sprites.weapon,this.getPseudoRandomInt()%10+1)
             break;
+            case "Shield":
+                this.matrix[x][y] = new Shield(this.RandomCalls+"Shield",x,y,Sprites.shield1,this.getPseudoRandomInt()%7+1)
+                break;
             default:
                 this.matrix[x][y] = new Monster("Skeleton" + this.RandomCalls+1,x,y,Sprites.npcSkeleton,3,6, 6, 1);
                 throw new Error("ошибка генерации сущности");
@@ -284,6 +311,18 @@ export class GameTable {//класс игрового стола, и его со
                         EmptyEntity.getDirection(firstEntity.x, firstEntity.y, secondEntity.x, secondEntity.y)
                         );
                     this.moveEntity(firstEntity, secondProperties.x, secondProperties.y);
+                    break;
+                case "Shield":
+                    if(firstEntity.shield < secondEntity.powerOfShield){
+                        firstEntity.shield = secondEntity.powerOfShield;
+                    }else{
+                        firstEntity.shield++;
+                    }
+                    this.deleteEntity(secondEntity,
+                        EmptyEntity.getDirection(firstEntity.x, firstEntity.y, secondEntity.x, secondEntity.y)
+                    );
+                    this.moveEntity(firstEntity,secondProperties.x,secondProperties.y);
+                    break;
             }
         } else if (firstEntity.EntityType === "Monster") {
             return false; //в процессе реализации...
@@ -303,6 +342,7 @@ export class GameTable {//класс игрового стола, и его со
                     this.matrix[x][y].draw(context);
             }
         }
+        //ниже отрисовывается зеленая обводка//
         if(this.NearEntityes===false){
         if (this.turn%2===0 && this.playerNumber ===1){
             this.NearEntityes = this.getNearEntityes(1);
@@ -317,7 +357,7 @@ export class GameTable {//класс игрового стола, и его со
 
         }
     }
-    getNearEntityes(id){
+    getNearEntityes(id){//возвращает массив сущностей находящиеся рядом с той котороую передали, + ту которую передали
         let player = this.getPlayerById(id);
         let curEnt;
         let arrayEntityes = [];
@@ -382,6 +422,7 @@ export class Character extends Entity {//от этого класса насле
         this.maxhealth = maxhealth;
         this.attack = attack;
         this.tier = tier;
+        this.shield = 0;
     }
     draw(context) {   //В процессе реализации...
         super.draw(context);
@@ -399,6 +440,16 @@ export class Character extends Entity {//от этого класса насле
         context.fillText("   ️" + this.attack,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
             GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)
+        if(this.shield>0){
+            context.drawImage(Sprites.shieldHUD,
+                GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,
+                GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE,
+                GameTable.CELLSIZE,
+                GameTable.CELLSIZE);
+            context.fillText("   ️" + this.shield,
+                GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
+                GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-27,)
+        }
     }
     decreaseHealth(value) {
         this.health = this.health - value;
@@ -406,6 +457,12 @@ export class Character extends Entity {//от этого класса насле
     increaseHealth(value) {
         this.health = this.health + value;
         if (this.health >this.maxhealth) this.health = this.maxhealth;
+    }
+    decreaseAttack(value){
+        this.attack -=value;
+        if(this.attack<=0){
+            this.attack = 1;
+        }
     }
 }
 export class Monster extends Character { //Класс монтров, в процессе реализации...
@@ -489,7 +546,7 @@ export class Barrel extends Entity{
         2: "Potion",
         3: "Poison_potion",
         4: "Weapon",
-        //7: "Shield",
+        5: "Shield",
     };
     constructor(id, x, y, sprite, nameSpawnableEntity) {
         super(id, x, y, sprite);
@@ -498,5 +555,18 @@ export class Barrel extends Entity{
     }
     draw(context) {
         super.draw(context);
+    }
+}
+export  class Shield extends  Entity{
+    constructor(id, x, y, sprite, powerOfShield) {
+        super(id, x, y, sprite);
+        this.EntityType = "Shield";
+        this.powerOfShield = powerOfShield
+    }
+    draw(context) {
+        super.draw(context);
+        context.fillText("   ️" + this.powerOfShield,
+            GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
+            GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)
     }
 }
