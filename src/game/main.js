@@ -3,9 +3,12 @@ import {GameTable,Sprites} from "./classes.mjs";
 let canvas, ctx, canvasId
 let playerNumber, roomExist = true
 let roomid = 0
+let attemp = 0
 let gameStart = false
 let gameController
 let ssid
+setInterval(()=> {
+    console.log(ssid)}, 4000)
 /*end globals*/
 
 const socket = io('http://localhost:3000')
@@ -117,7 +120,8 @@ function unhideMainPage() {
 /* init game when players are ready */
 function initGame(row, col, ssid) {
     const huge = 13371337
-    gameController = new GameController(Math.floor( codeInput.value / 100 + huge ), playerNumber)
+    attemp++
+    gameController = new GameController(Math.floor(attemp +  codeInput.value / 100 + huge ), playerNumber)
     gameController.desk.spawnPlayer(0,0, 0)
     gameController.desk.spawnPlayer(1,5,5)
     document.addEventListener("mouseup", mouseUpHandler, false);

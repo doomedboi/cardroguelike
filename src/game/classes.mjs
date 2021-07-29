@@ -280,7 +280,7 @@ export class GameTable {//класс игрового стола, и его со
         let secondProperties = secondEntity.getProperties();
 
         //ВЫНЕСТИ СРАБАТЫВАЕНИЕ ЕВЕНТА В МЕЙН!!!!!!//
-        if(this.turn===15){this.event = 1};//костыль
+        if(this.turn===5){this.event = 1};//костыль
         //!!!!///
 
         if (firstEntity.EntityType === "Player") {

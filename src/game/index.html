@@ -3,55 +3,59 @@
 
 <head>
     <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <title>CardRougeLike</title>
     <style>
-        startScreen {
-            justify-content: center;
-        }
-        * {
-            padding: 0;
-            margin: 0;
-        }
-        #myCanvas {
-            display: inline;
-        }
-        #gameScreen {
-            width: 100%;
-            text-align:center;
-            display: none;
-            background-image: url(resources/bg.png);
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-size: cover;
-        }
-        #createdGameId { display: none}
-        #endGameWnd {
-            display: none;
+        .block {
+            background-image: url('https://mdbootstrap.com/img/new/slides/003.jpg');
         }
     </style>
 </head>
 
 <body>
-    <div id="startScreen">
-        <h1>START SCREEN PAGE</h1>
-        <button id="newGameBtn" type="submit">Create new game</button>
+<div class="bg-image" style="
+      background-image: url('./resources/bg.png');
+    ">
+<section class="vh-100">
+    <div class="container h-100">
         <span id="createdGameId"></span>
-        <br> <a>or</a> <br> <a>Join game via invite-code</a>
-        <input id="joinGameId"> <br>
-        <button id="joinGameBtn" type="submit">Join game</button>
-    </div>
-    <div id="gameScreen">
-        <canvas id="myCanvas"></canvas>
-    </div>
-    <div id="endGameWnd">
-        <button id="restartBtn">restart</button>
-        <button id="leaveBtn">leave</button>
-    </div>
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"
-            integrity="sha384-DkkWv9oJFWLIydBXXjkBWnG1/fuVhw8YPBq37uvvD6WSYRFRqr21eY5Dg9ZhmWdy"
-            crossorigin="anonymous"></script>
-    <script type="module" src="main.js"></script>
+        <div id="startScreen" class="h-100">
+            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                <p class="text-danger">Our game</p>
+                <button
+                        type="submit"
+                        class="btn btn-success"
+                        id="newGameBtn"
+                >
+                    Create New Game
+                </button>
+                <div>OR</div>
+                <div class="form-group">
+                    <input type="text" placeholder="Enter Game Code" id="joinGameId"/>
+                </div>
+                <button
+                        type="submit"
+                        class="btn btn-dark"
+                        id="joinGameBtn"
+                >
+                    Join Game
+                </button>
+            </div>
+        </div>
 
+        <div id="gameScreen" class="h-100">
+            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                <canvas id="myCanvas"></canvas>
+            </div>
+        </div>
+
+    </div>
+</section>
+    </div>
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"
+        integrity="sha384-DkkWv9oJFWLIydBXXjkBWnG1/fuVhw8YPBq37uvvD6WSYRFRqr21eY5Dg9ZhmWdy"
+        crossorigin="anonymous"></script>
+<script type="module" src="main.js"></script>
 </body>
 
 </html>
