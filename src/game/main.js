@@ -5,18 +5,21 @@ let playerNumber, roomExist = true
 let roomid = 0
 let gameStart = false
 let gameController
+let ssid
 /*end globals*/
 
 const socket = io('http://localhost:3000')
 
 /* listen to init event with handler */
 socket.on('init', handleInit)
-socket.on('gameOver', handleGameOver)
+socket.on('gameOverClient', handleGameOver)
 socket.on('gameCode', handleGameCode)
 socket.on('invalidGameToken', handleInvalidGame)
 socket.on('tooManyPlayers', handleRoomIsFull)
 socket.on('mustMove', handleRequestMove)
 socket.on('generateGame', handleGenerateGame)
+socket.on('left', handleLeftUser)
+socket.on('getSSID', handleGetSSID)
 /* end of init list */
 
 /* init html elems */
@@ -38,9 +41,16 @@ function handleGenerateGame() {
     initGame()
 }
 
+function handleLeftUser() {
+    alert("Your opponent has left the match")
+}
+
 function handleRequestMove(state) {
     state = JSON.parse(state)
     gameController.desk.interact(gameController.desk.getEntity(state.fx, state.fy),gameController.desk.getEntity(state.sx, state.sy))
+    if (gameController.desk.getPlayerById(gameController.playerNumber).isDead()) {
+        socket.emit('gameOver', codeInput.value)
+    }
     gameController.nowAct = !gameController.nowAct
 }
 
@@ -59,7 +69,18 @@ function handleInit(playerId) {
 }
 //replace to GM
 function handleGameOver() {
-    alert("Looose")
+    console.log("here")
+    gameController.EndOfGame()
+}
+
+function handleGetSSID(code) {
+    ssid = code
+    console.log('lllll')
+    console.log(code)
+}
+
+function generateSSID(room) {
+    socket.emit('genSSID')
 }
 
 function handleGameCode(code) {
@@ -69,14 +90,6 @@ function handleGameCode(code) {
     createdGameId.innerText = code
 }
 
-function handleEndOfGame(data) {
-    data = JSON.parse(data)
-    if (data.winId === playerNumber) {
-        alert("You win kiddo")
-    } else {
-        alert("You lose")
-    }
-}
 /*end of list */
 
 function initCanvas() {
@@ -100,18 +113,15 @@ function unhideMainPage() {
 }
 
 
+
 /* init game when players are ready */
 function initGame(row, col, ssid) {
-    gameController = new GameController(playerNumber)
+    const huge = 13371337
+    gameController = new GameController(Math.floor( codeInput.value / 100 + huge ), playerNumber)
     gameController.desk.spawnPlayer(0,0, 0)
     gameController.desk.spawnPlayer(1,5,5)
     document.addEventListener("mouseup", mouseUpHandler, false);
     gameStart = true
-
-    setInterval( ()=> {
-        console.log('ID:')
-        console.log(gameController.playerNumber)
-    }, 1000)
 }
 function startNewGame() {
     //need to create new socket.io room
@@ -123,7 +133,9 @@ function joinGame() {
     socket.emit('joinRoom', roomId)
     prepaireBefGame()
     console.log('send req from this local')
+    //check room have 2 players
     //send req to init game
+    generateSSID(roomId)
     socket.emit('generateGame', roomId)
 }
 
@@ -151,12 +163,15 @@ function mouseUpHandler(e) {
     }
 }
 
+
+
 class GameController {
-    constructor(playerNumber) {
+    constructor(ssid, playerNumber) {
         this.playerNumber = playerNumber
         this.nowAct = (playerNumber === 1)
         Sprites.initial()
-        this.desk = new GameTable(93930493,6,6,Sprites.tableImg,playerNumber);
+        console.log(ssid)
+        this.desk = new GameTable(ssid,6,6,Sprites.tableImg,playerNumber);
     }
 
     interact(xPos, yPos) {
@@ -166,10 +181,21 @@ class GameController {
         let targetEntity = this.desk.getEntityByCoordinates(xPos,yPos);
         if (this.nowAct && this.desk.validMove(player, targetEntity)) { //getPlayer(ид нужного игрока)
             this.requestMove(this.desk.matrix[player.x][player.y], this.desk.matrix[targetEntity.x][targetEntity.y])
-            if (this.desk.getPlayerById(this.playerNumber).isDead()) {
-                //handle game over
-            }
         }
+    }
+
+
+
+    EndOfGame() {
+        let winner = !this.desk.getPlayerById(this.playerNumber).isDead()
+        if (confirm(winner? "You win\nDo you want to replay?" : "You lose\nDo you want to replay?")){
+            prepaireBefGame()
+            socket.emit('generateGame', codeInput.value)
+            console.log('restart')
+            //send to server want to restart
+        }
+        else
+            resetHtmlStates()
     }
 
     requestMove(first, second) {

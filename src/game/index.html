@@ -25,6 +25,9 @@
             background-size: cover;
         }
         #createdGameId { display: none}
+        #endGameWnd {
+            display: none;
+        }
     </style>
 </head>
 
@@ -39,6 +42,10 @@
     </div>
     <div id="gameScreen">
         <canvas id="myCanvas"></canvas>
+    </div>
+    <div id="endGameWnd">
+        <button id="restartBtn">restart</button>
+        <button id="leaveBtn">leave</button>
     </div>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"
             integrity="sha384-DkkWv9oJFWLIydBXXjkBWnG1/fuVhw8YPBq37uvvD6WSYRFRqr21eY5Dg9ZhmWdy"
