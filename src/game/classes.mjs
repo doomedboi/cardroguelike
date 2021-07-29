@@ -692,7 +692,7 @@ export class Trader extends Entity{
     }
     getItem(player,desk){
         if(player.gold<=0){
-            return new Trap("tradetrap",this.x,this.y,Sprites.trap,price);
+            return new Trap("tradetrap",this.x,this.y,Sprites.trap,desk.getPseudoRandomInt(8,5));
         }
         let price;
         if(player.health<5){
