@@ -7,39 +7,53 @@ export const Sprites = { //здесь находятся все объекты �
     npcSkeleton: new Image(),
     coins: new Image(),
     barrel: new Image(),
-    weapon: new Image(),
-    potion: new Image(),
+    weapon1: new Image(),
+    weapon2: new Image(),
+    weapon3: new Image(),
+    weapon4: new Image(),
+    potion1: new Image(),
+    potion2: new Image(),
+    potion3: new Image(),
     trap: new Image(),
     entityBackground: new Image(),
     player2Img: new Image(),
-    necromancer: new Image(),
-    vermin: new Image(),
+    monster1 : new Image(),
+    monster2 : new Image(),
+    monster3 : new Image(),
     greenframe: new Image(),
     shield1: new Image(),
+    shield2: new Image(),
+    shield3: new Image(),
     shieldHUD: new Image(),
     playerHUD: new Image(),
     trader: new Image(),
     //...
     //...
-    initial() {//здесь они инициализируются. 
-        //Возможно стоит вынести эти пути в отдельный файл json
+    initial() {//здесь они инициализируются.
         this.desk.src = "resources/Desk.png"
         this.characterBackground.src = "resources/Character_background.png";
         this.player1Img.src = "resources/Player1.png";
         this.player2Img.src = "resources/Player2.png";
-        this.npcSkeleton.src = "resources/Skeleton.png";
+        this.monster1.src = "resources/Skeleton.png";
         this.emptyEntityImg.src = "resources/EmptyEntity.png";
         this.tableImg.src = "resources/Table.png";
         this.coins.src = "resources/Coins.png";
         this.barrel.src = "resources/Barrel.png";
-        this.weapon.src = "resources/Weapon.png";
+        this.weapon1.src = "resources/Weapon1.png";
+        this.weapon2.src = "resources/Weapon2.png";
+        this.weapon3.src = "resources/Weapon3.png";
+        this.weapon4.src = "resources/Weapon4.png";
         this.trap.src = "resources/Trap.png";
-        this.potion.src = "resources/Potion.png";
+        this.potion1.src = "resources/Potion1.png";
+        this.potion2.src = "resources/Potion2.png";
+        this.potion3.src = "resources/Potion3.png";
         this.entityBackground.src = "resources/Entity_background.png";
-        this.necromancer.src = "resources/Necromancer.png";
-        this.vermin.src = "resources/Vermin.png";
+        this.monster3.src = "resources/Necromancer.png";
+        this.monster2.src = "resources/Vermin.png";
         this.greenframe.src = "resources/Green.png";
         this.shield1.src = "resources/Shield1.png";
+        this.shield2.src = "resources/Shield2.png";
+        this.shield3.src = "resources/Shield2.png";
         this.shieldHUD.src = "resources/ShieldHUD.png";
         this.playerHUD.src = "resources/PlayerHUD.png";
         this.trader.src ="resources/Trader.png";
@@ -167,7 +181,6 @@ export class GameTable {//класс игрового стола, и его со
         firstCharacter.decreaseAttack(1);
         secondCharacter.decreaseAttack(1);
     }
-
     getPlayerById(id){
         const idName = "Player" + id
         for (let x = 0; x < this.width; x++) {
@@ -178,7 +191,6 @@ export class GameTable {//класс игрового стола, и его со
             }
         }
     }
-
     spawnPlayer(id, x, y){
         if(!(x>=0&&x<this.width&&y>=0&&y<this.height))return false;
         this.matrix[x][y] = new Player('Player' + id, x, y,
@@ -192,7 +204,7 @@ export class GameTable {//класс игрового стола, и его со
     getPseudoRandomInt(to, from=0){
         this.RandomCalls++;
         if (from!=0){
-            return to+this.getPseudoRandomInt(to-from);
+            return from+this.getPseudoRandomInt(to-from);
         }
         let c = Math.pow((this.RandomCalls+this.seed),(this.RandomCalls+1)%10);
         let sum = 0;
@@ -202,42 +214,6 @@ export class GameTable {//класс игрового стола, и его со
         }
         let result = sum%(to+1);
         return result;
-    }
-    generateRandomMonster(x,y){
-        let ENUM_MONSTRES = {
-            0: "Skeleton",
-            1: "Vermin",
-            2: "Necromancer",
-        }
-        let newMonster = new Monster(this.RandomCalls,
-            x,y, 0,
-            this.getPseudoRandomInt(9),
-            this.getPseudoRandomInt(0),
-            0,
-            1, 1);
-        switch (ENUM_MONSTRES[this.getPseudoRandomInt(2)]){
-            case "Necromancer":
-                newMonster.sprite = Sprites.necromancer;
-                newMonster.attack+=7;
-                newMonster.health+=7;
-                newMonster.maxhealth = newMonster.health;
-                newMonster.tier = 3;
-                newMonster.reward = 10;
-                break;
-            case "Skeleton":
-                newMonster.maxhealth = newMonster.health;
-                newMonster.sprite = Sprites.npcSkeleton;
-                break;
-            case "Vermin":
-                newMonster.sprite = Sprites.vermin;
-                newMonster.attack+=3;
-                newMonster.health+=3;
-                newMonster.maxhealth = newMonster.health;
-                newMonster.tier = 2;
-                newMonster.reward = 5;
-                break;
-        }
-        return newMonster;
     }
     generateEntity(x,y, target = false,entity = false){
         let generateSeed = this.getPseudoRandomInt(GameTable.COUNTS_OF_ENTITYES-1); // 8- количество вариантов сущностей
@@ -253,7 +229,7 @@ export class GameTable {//класс игрового стола, и его со
             }
         switch(nameEntity){
             case "Monster":
-                this.matrix[x][y] = this.generateRandomMonster(x,y);
+                this.matrix[x][y] = Monster.generateMonster(x,y,this);
             break;
             case "Coins":
                 this.matrix[x][y] = new Coins(this.RandomCalls+'Coins',x,y,Sprites.coins,1);
@@ -262,16 +238,16 @@ export class GameTable {//класс игрового стола, и его со
                 this.matrix[x][y] = new Barrel(this.RandomCalls+"Barrel",x,y,Sprites.barrel,this.generateNameEntityForBarrelSpawn());
             break;
             case "Potion":
-                this.matrix[x][y] = new Potion(this.RandomCalls+"Potion",x,y,Sprites.potion,this.getPseudoRandomInt(5,1));
+                this.matrix[x][y] = Potion.generatePotion(x,y,this);
             break;
             case "Trap":
                 this.matrix[x][y] = new Trap(this.RandomCalls+"Weapon",x,y,Sprites.trap,this.getPseudoRandomInt(5,1));
             break;
             case "Weapon":
-                this.matrix[x][y] = new Weapon(this.RandomCalls+"Weapon",x,y,Sprites.weapon,this.getPseudoRandomInt(10,1));
+                this.matrix[x][y] = Weapon.generateWeapon(x,y,this);
             break;
             case "Shield":
-                this.matrix[x][y] = new Shield(this.RandomCalls+"Shield",x,y,Sprites.shield1,this.getPseudoRandomInt(7,1));
+                this.matrix[x][y] = Shield.generateShield(x,y,this);
                 break;
             case "Trader":
                 if(this.traderOnDesk === false){
@@ -280,8 +256,8 @@ export class GameTable {//класс игрового стола, и его со
                 break;
                 }
             default:
-                this.matrix[x][y] = new Monster("Skeleton" + this.RandomCalls+1,x,y,Sprites.npcSkeleton,3,6, 6, 1);
-        }
+                this.matrix[x][y] = Monster.generateMonster(x,y,this);
+            }
         this.RandomCalls++;
         }
         return true;
@@ -363,7 +339,7 @@ export class GameTable {//класс игрового стола, и его со
                     this.moveEntity(firstEntity,secondProperties.x,secondProperties.y);
                     break;
                 case "Trader":
-                    this.matrix[secondEntity.x][secondEntity.y] = secondEntity.getItem(firstEntity);
+                    this.matrix[secondEntity.x][secondEntity.y] = secondEntity.getItem(firstEntity,this);
                     this.traderOnDesk = false;
             }
         } else if (firstEntity.EntityType === "Monster") {
@@ -435,7 +411,6 @@ export class Entity {  //сущность объекта игрового сто
                 GameTable.CELLSIZE);
             context.drawImage(this.sprite,GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE,GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE, GameTable.CELLSIZE, GameTable.CELLSIZE);
         }
-
     getProperties() {
         return { name: this.id, x: this.x, y: this.y, sprite: this.sprite };
     }
@@ -467,16 +442,18 @@ export class Character extends Entity {//от этого класса насле
         this.HUD = Sprites.characterBackground;
         this.EntityType = "Character";
         this.health = health;
-        this.maxhealth = maxhealth;
+        if (maxhealth ===0){
+            this.maxhealth = health
+        }else{
+            this.maxhealth = maxhealth;
+        }
         this.attack = attack;
         this.tier = tier;
         this.shield = 0;
     }
-
     isDead() {
         return this.health <= 0;
     }
-
     draw(context) {   //В процессе реализации...
         super.draw(context);
         context.drawImage(this.HUD,
@@ -519,12 +496,31 @@ export class Character extends Entity {//от этого класса насле
     }
 }
 export class Monster extends Character { //Класс монтров, в процессе реализации...
-    constructor(id, x, y, sprite, attack, health, maxhealth, tier, reward) {
+    static generateMonster(x,y,desk,tier = 0){
+        if(tier ===0){
+            tier = desk.getPseudoRandomInt(3,1);
+        }
+        let newMonster = new Monster(desk.RandomCalls,x,y,0,desk.getPseudoRandomInt(5,3)*tier,
+            desk.getPseudoRandomInt(5,3)*tier,0,tier);
+        switch (tier){
+            case 1:
+                newMonster.sprite = Sprites.monster1;
+                break;
+            case 2:
+                newMonster.sprite = Sprites.monster2;
+                break;
+            case 3:
+                newMonster.sprite = Sprites.monster3;
+                break;
+        }
+        return newMonster;
+    }
+    constructor(id, x, y, sprite, attack, health, maxhealth, tier) {
         super(id, x, y, sprite,attack, health,maxhealth, tier);
         this.EntityType = "Monster";
         this.reward = {
-            gold: tier*1,
-            experience: tier*1,
+            gold: tier*3,
+            experience: tier*3,
         };
     }
 }
@@ -562,6 +558,22 @@ export class Coins extends Entity {
     }
 }
 export class Weapon extends Entity {
+    static generateWeapon(x,y,desk,power=0){
+        if (power === 0){
+            power = desk.getPseudoRandomInt(10,1)
+        }
+        let newWeapon = new Weapon(this.RandomCalls,x,y,0,power);
+        if(power<=3){
+            newWeapon.sprite = Sprites.weapon1;
+        }else if (power<=7){
+            newWeapon.sprite = Sprites.weapon2;
+        }else if (power<=10){
+            newWeapon.sprite = Sprites.weapon3;
+        }else{
+            newWeapon.sprite = Sprites.weapon4;
+        }
+        return newWeapon;
+    }
     constructor(id, x, y, sprite, powerOfWeapon) {
         super(id, x, y, sprite);
         this.EntityType = "Weapon";
@@ -575,6 +587,20 @@ export class Weapon extends Entity {
     }
 }
 export class Potion extends Entity {
+    static generatePotion(x,y,desk,power=0){
+        if (power === 0){
+            power = desk.getPseudoRandomInt(10,1)
+        }
+        let newPotion = new Potion(this.RandomCalls,x,y,0,power);
+        if(power<=4){
+            newPotion.sprite = Sprites.potion1;
+        }else if (power<=8){
+            newPotion.sprite = Sprites.potion2;
+        }else{
+            newPotion.sprite = Sprites.potion3;
+        }
+        return newPotion;
+    }
     constructor(id, x, y, sprite, powerOfPotion) {
         super(id, x, y, sprite);
         this.EntityType = "Potion";
@@ -630,7 +656,7 @@ export class Trader extends Entity{
     draw(context) {
         super.draw(context);
     }
-    getItem(player){
+    getItem(player,desk){
         if(player.gold<=0){
             return new Trap("tradetrap",this.x,this.y,Sprites.trap,price);
         }
@@ -643,21 +669,35 @@ export class Trader extends Entity{
             }else{
                 player.gold -=price;
             }
-            return new Potion("tradepotion",this.x,this.y,Sprites.potion,price);
+            return new Potion.generatePotion(x,y,desk,price);
             }
         else if (player.attack<player.shield){
             price = player.gold;
             player.gold = 0;
-            return new Weapon("tradeweapon",this.x,this.y,Sprites.weapon,price);
+            return Weapon.generateWeapon(this.x,this.y,desk,price);
         }
         else{
             price = player.gold;
             player.gold = 0;
-            return new Shield("tradeshield",this.x,this.y,Sprites.shield1,price);
+            return Shield.generateShield(this.x,this.y,desk,price);
         }
     }
 }
 export  class Shield extends  Entity{
+    static generateShield(x,y,desk,power=0){
+        if (power === 0){
+            power = desk.getPseudoRandomInt(12,1)
+        }
+        let newShield = new Shield(this.RandomCalls,x,y,0,power);
+        if(power<=4){
+            newShield.sprite = Sprites.shield1;
+        }else if (power<=8){
+            newShield.sprite = Sprites.shield2;
+        }else{
+            newShield.sprite = Sprites.shield3;
+        }
+        return newShield;
+    }
     constructor(id, x, y, sprite, powerOfShield) {
         super(id, x, y, sprite);
         this.EntityType = "Shield";
