@@ -22,6 +22,7 @@ export const Sprites = { //здесь находятся все объекты �
     monster1 : new Image(),
     monster2 : new Image(),
     monster3 : new Image(),
+    monster4 : new Image(),
     greenframe: new Image(),
     shield1: new Image(),
     shield2: new Image(),
@@ -50,6 +51,7 @@ export const Sprites = { //здесь находятся все объекты �
         this.potion2.src = "resources/Potion2.png";
         this.potion3.src = "resources/Potion3.png";
         this.entityBackground.src = "resources/Entity_background.png";
+        this.monster4.src = "resources/Monster4.png"
         this.monster3.src = "resources/Necromancer.png";
         this.monster2.src = "resources/Vermin.png";
         this.boss1.src = "resources/Boss1.png";
@@ -57,7 +59,7 @@ export const Sprites = { //здесь находятся все объекты �
         this.greenframe.src = "resources/Green.png";
         this.shield1.src = "resources/Shield1.png";
         this.shield2.src = "resources/Shield2.png";
-        this.shield3.src = "resources/Shield2.png";
+        this.shield3.src = "resources/Shield3.png";
         this.shieldHUD.src = "resources/ShieldHUD.png";
         this.playerHUD.src = "resources/PlayerHUD.png";
         this.trader.src ="resources/Trader.png";
@@ -266,9 +268,9 @@ export class GameTable {//класс игрового стола, и его со
             }
         this.RandomCalls++;
         }
-        if (this.event ===1){
+        if (this.event ===1 && target === false){
             if (!this.bossOnDesk){
-                this.matrix[x][y] = Monster.generateMonster(x,y,this,4);
+                this.matrix[x][y] = Monster.generateMonster(x,y,this,5);
                 this.bossOnDesk = true;
             }else{
                 this.matrix[x][y] = Monster.generateMonster(x,y,this,0);
@@ -280,7 +282,7 @@ export class GameTable {//класс игрового стола, и его со
         let secondProperties = secondEntity.getProperties();
 
         //ВЫНЕСТИ СРАБАТЫВАЕНИЕ ЕВЕНТА В МЕЙН!!!!!!//
-        if(this.turn===5){this.event = 1};//костыль
+        if(this.turn===10){this.event = 1};//костыль
         //!!!!///
 
         if (firstEntity.EntityType === "Player") {
@@ -519,10 +521,10 @@ export class Character extends Entity {//от этого класса насле
 export class Monster extends Character { //Класс монтров, в процессе реализации...
     static generateMonster(x,y,desk,tier = -1){
         if(tier ===-1){
-            tier = desk.getPseudoRandomInt(3,1);
+            tier = desk.getPseudoRandomInt(4,1);
         }
-        let newMonster = new Monster(desk.RandomCalls,x,y,0,desk.getPseudoRandomInt(5,3)*tier,
-            desk.getPseudoRandomInt(5,3)*tier,0,tier);
+        let newMonster = new Monster(desk.RandomCalls,x,y,0,desk.getPseudoRandomInt(3,2)*tier,
+            desk.getPseudoRandomInt(3,2)*tier,0,tier);
         switch (tier){
             case 0:
                 newMonster.sprite = Sprites.monster1boss1;
@@ -537,9 +539,12 @@ export class Monster extends Character { //Класс монтров, в про�
                 newMonster.sprite = Sprites.monster2;
                 break;
             case 3:
-                newMonster.sprite = Sprites.monster3;
+                newMonster.sprite = Sprites.monster4;
                 break;
             case 4:
+                newMonster.sprite = Sprites.monster3;
+                break;
+            case 5:
                 newMonster.sprite = Sprites.boss1;
                 newMonster.id = "Boss"
                 newMonster.attack = 10;
