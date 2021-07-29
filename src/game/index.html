@@ -12,26 +12,40 @@
     </style>
 </head>
 
-<body>
+<body style="height: 100vh">
 <div class="bg-image" style="
-      background-image: url('./resources/bg.png');
+      background: url('./resources/bg.png') no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;;
+
     ">
+    <span id="createdGameId"style="position: absolute"></span>
 <section class="vh-100">
     <div class="container h-100">
-        <span id="createdGameId"></span>
         <div id="startScreen" class="h-100">
             <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                <p class="text-danger">Our roguelike</p>
+                <p class="text-danger" style="font-family: fantasy;font-size: 60px">CARDEST DANGEON</p>
                 <button
+                        style="margin-bottom: 10px;font-family: fantasy;color: black"
                         type="submit"
                         class="btn btn-success"
-                        id="newGameBtn"
+                        id="singleplayerBtn"
                 >
-                    Create New Game
+                    New singleplayer game
                 </button>
-                <div>OR</div>
+                <button
+                        style="margin-bottom: 10px;font-family: fantasy;color: black"
+                        type="submit"
+                        class="btn btn-success"
+                        id="multiplayerBtn"
+                >
+                    Create room for multiplayer
+                </button>
+                <div style="color: aliceblue;margin-bottom: 10px">OR</div>
                 <div class="form-group">
-                    <input type="text" placeholder="Enter Game Code" id="joinGameId"/>
+                    <input type="text" placeholder="Enter Game Code" id="joinGameId"; style="text-align: center"/>
                 </div>
                 <button
                         type="submit"
@@ -42,13 +56,11 @@
                 </button>
             </div>
         </div>
-
-        <div id="gameScreen" class="h-100">
+        <div id="gameScreen" class="h-100" style="display: none; height: 100vh">
             <div class="d-flex flex-column align-items-center justify-content-center h-100">
                 <canvas id="myCanvas"></canvas>
             </div>
         </div>
-
     </div>
 </section>
     </div>
