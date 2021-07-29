@@ -135,7 +135,7 @@ export class GameTable {//класс игрового стола, и его со
     }
     getNextMovableEntity(x, y, fillingDirection) {
         switch (fillingDirection) {
-            case EmptyEntity.DIRECTION.BELOW:
+                case EmptyEntity.DIRECTION.BELOW:
                 y += 1;
                 break;
             case EmptyEntity.DIRECTION.LEFT:
@@ -594,7 +594,7 @@ export class Coins extends Entity {
 export class Weapon extends Entity {
     static generateWeapon(x,y,desk,power=0){
         if (power === 0){
-            power = desk.getPseudoRandomInt(10,1)
+            power = desk.getPseudoRandomInt(10,2)
         }
         let newWeapon = new Weapon(this.RandomCalls,x,y,0,power);
         if(power<=3){
