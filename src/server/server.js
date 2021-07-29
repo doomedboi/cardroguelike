@@ -9,13 +9,26 @@ const state = {};
 
 const {FRAME} = require("./gConstans")
 const {randomStr} = require("./helpers")
-const {createGameState, mainGameLoop} = require("./game")
 
 io.on('connection', client => {
     client.on('newGame', handleNewGame)
     client.on('joinRoom', handleJoinRoom)
     client.on('makeMove', handleMakeMove)
     client.on('generateGame', handleGenerateGame)
+    client.on('gameOver', handleGameOver)
+    client.on('disconnect', () => {
+        io.sockets.in(rooms[client.id]).emit('left')
+    })
+
+    client.on('genSSID', (room)=> {
+        let ssid = randomStr(10)
+        io.sockets.in(room).emit('getSSID', ssid)
+    })
+
+    function handleGameOver(room) {
+        console.log("end")
+        io.sockets.in(room).emit('gameOverClient')
+    }
 
     function handleMakeMove(room, state) {
         console.log('state in handle makeMove')
@@ -59,20 +72,7 @@ io.on('connection', client => {
         //send back
         client.emit('gameCode', roomId)
     }
-    startGameInterval(client, state)
+
 })
-
-function startGameInterval(client, state) {
-    const Id = setInterval( ()=> {
-        /*const resultOfGame = mainGameLoop(state)
-        if (!resultOfGame) {
-            client.emit('gameState', JSON.stringify(state))
-        } else {
-            client.emit('gameOver')
-            clearInterval(Id)
-        }*/
-
-    }, FRAME)
-}
 
 io.listen(3000)
