@@ -18,7 +18,7 @@ let smth = new Smth()
 
 /*end globals*/
 
-let socket = io('http://localhost:3000')
+let socket = io('https://dry-inlet-45073.herokuapp.com/')
 
 /* listen to init event with handler */
 socket.on('init', handleInit)
