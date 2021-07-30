@@ -30,7 +30,7 @@ function randomStr(len) {
 
 /*end globals*/
 
-let socket = io('http://localhost:3000')
+let socket = io('http://localhost:3000',{'timeout':2000, 'connect timeout': 2000})
 
 /* listen to init event with handler */
 socket.on('init', handleInit)
@@ -172,6 +172,7 @@ function joinGame() {
     const roomId = codeInput.value
     socket.emit('joinRoom', roomId)
     prepaireBefGame()
+    socket.emit("checkValidRoom", roomId)
     console.log('send req from this local')
     //check room have 2 players
     //send req to init game
@@ -256,7 +257,7 @@ class MultiplayerGameController extends GameController{
         }
         else {
             socket.emit('forceDisconnect');
-            //socket.emit('checkValidRoom', codeInput.value)
+            socket.emit('checkValidRoom', codeInput.value)
             //socket.emit('clientDisconnect', codeInput.value)
             resetAfterGame()
             resetHtmlStates()
