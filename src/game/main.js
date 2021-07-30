@@ -153,7 +153,6 @@ function joinGame() {
     const roomId = codeInput.value
     socket.emit('joinRoom', roomId)
     prepaireBefGame()
-    socket.emit("checkValidRoom", roomId)
     console.log('send req from this local')
     //check room have 2 players
     //send req to init game
@@ -238,7 +237,7 @@ class MultiplayerGameController extends GameController{
         }
         else {
             socket.emit('forceDisconnect');
-            socket.emit('checkValidRoom', codeInput.value)
+            //socket.emit('checkValidRoom', codeInput.value)
             //socket.emit('clientDisconnect', codeInput.value)
             resetAfterGame()
             resetHtmlStates()
