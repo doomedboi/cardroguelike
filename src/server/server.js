@@ -16,10 +16,10 @@ io.on('connection', client => {
     client.on('makeMove', handleMakeMove)
     client.on('generateGame', handleGenerateGame)
     client.on('gameOver', handleGameOver)
-    /*client.on('disconnect', () => {
+    client.on('disconnect', () => {
         console.log("des")
         io.sockets.in(rooms[client.id]).emit('left')
-    })*/
+    })
 
     client.on('genSSID', (room)=> {
         let ssid = randomStr(10)

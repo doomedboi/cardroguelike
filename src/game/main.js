@@ -5,8 +5,21 @@ let playerNumber, roomExist = true
 let roomid = 0
 let attemp = 0
 let gameStart = false
-let gameController
+let multiplayerGameController
+let singlGameController
 let ssid
+let gameType = 'none'
+
+function randomStr(len) {
+    let result           = '';
+    const characters       = '123456789';
+    const charactersLength = characters.length;
+    for ( let i = 0; i < len; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return parseInt( result );
+}
+
 setInterval(()=> {
     console.log(ssid)}, 4000)
 /*end globals*/
@@ -33,12 +46,15 @@ const newGameBtn = document.getElementById("multiplayerBtn")
 const codeInput = document.getElementById("joinGameId")
 const joinGameBtn = document.getElementById("joinGameBtn")
 const createdGameId = document.getElementById("createdGameId")
+//const singlBtn = document.getElementById("singlBtn")
 /*end of init */
 
 /* listeners */
 newGameBtn.addEventListener('click', startNewGame)
 joinGameBtn.addEventListener('click', joinGame)
+sinleplayerBtn.addEventListener('click', startSingl)
 /*end listeners */
+
 
 /* list of handlers */
 function handleGenerateGame() {
@@ -51,11 +67,11 @@ function handleLeftUser() {
 
 function handleRequestMove(state) {
     state = JSON.parse(state)
-    gameController.desk.interact(gameController.desk.getEntity(state.fx, state.fy),gameController.desk.getEntity(state.sx, state.sy))
-    if (gameController.desk.getPlayerById(gameController.playerNumber).isDead()) {
+    multiplayerGameController.desk.interact(multiplayerGameController.desk.getEntity(state.fx, state.fy),multiplayerGameController.desk.getEntity(state.sx, state.sy))
+    if (multiplayerGameController.desk.getPlayerById(multiplayerGameController.playerNumber).isDead()) {
         socket.emit('gameOver', codeInput.value)
     }
-    gameController.nowAct = !gameController.nowAct
+    multiplayerGameController.nowAct = !multiplayerGameController.nowAct
 }
 
 function handleInvalidGame() {
@@ -74,7 +90,7 @@ function handleInit(playerId) {
 //replace to GM
 function handleGameOver() {
     console.log("here")
-    gameController.EndOfGame()
+    multiplayerGameController.EndOfGame()
 }
 
 function handleGetSSID(code) {
@@ -122,9 +138,10 @@ function unhideMainPage() {
 function initGame(row, col, ssid) {
     const huge = 13371337
     attemp++
-    gameController = new GameController(Math.floor(attemp +  codeInput.value / 100 + huge ), playerNumber)
-    gameController.desk.spawnPlayer(0,0, 0)
-    gameController.desk.spawnPlayer(1,5,5)
+    multiplayerGameController = new MultiplayerGameController(Math.floor(attemp +  codeInput.value / 100 + huge ), 6, 6,playerNumber, true)
+    multiplayerGameController.desk.spawnPlayer(0,0, 0)
+    multiplayerGameController.desk.spawnPlayer(1,5,5)
+    gameType = 'multiplayer'
     document.addEventListener("mouseup", mouseUpHandler, false);
     gameStart = true
 }
@@ -144,6 +161,11 @@ function joinGame() {
     socket.emit('generateGame', roomId)
 }
 
+function resetAfterGame() {
+    gameStart = false;
+    gameType = 'none'
+}
+
 function resetHtmlStates() {
     gameScreen.style.display = 'none'
     startScreen.style.display = 'block'
@@ -154,8 +176,12 @@ function resetHtmlStates() {
 function draw() {
     ctx.beginPath();
     ctx.clearRect(0, 0, canvas.width, canvas.height); // очищаем поверхность
-    if (gameStart)
-        gameController.desk.draw(ctx);
+    if (gameStart) {
+        if (gameType === 'singl')
+            singlGameController.desk.draw(ctx);
+        else
+            multiplayerGameController.desk.draw(ctx)
+    }
     ctx.closePath();
     requestAnimationFrame(draw)
 }
@@ -164,19 +190,30 @@ function mouseUpHandler(e) {
     if (e.button == 0 && e.target.id == 'myCanvas') {
         let xPos = e.offsetX;
         let yPos = e.offsetY;
-        gameController.interact (xPos, yPos)
+        if (gameType === 'singl')
+            singlGameController.interact (xPos, yPos)
+        else
+            multiplayerGameController.interact (xPos, yPos)
     }
 }
 
-
-
 class GameController {
-    constructor(ssid, playerNumber) {
+    constructor(ssid, col, row, bMultiplayer) {
+        Sprites.initial()
+        this.desk = new GameTable(ssid,col,row,Sprites.tableImg,bMultiplayer);
+        console.log(ssid)
+    }
+
+    interact(){}
+    EndOfGame(){}
+    requestMove(){}
+}
+
+class MultiplayerGameController extends GameController{
+    constructor(ssid, col, row, playerNumber ,bMultiplayer) {
+        super(ssid, col, row, bMultiplayer)
         this.playerNumber = playerNumber
         this.nowAct = (playerNumber === 1)
-        Sprites.initial()
-        console.log(ssid)
-        this.desk = new GameTable(ssid,6,6,Sprites.tableImg,playerNumber);
     }
 
     interact(xPos, yPos) {
@@ -184,12 +221,10 @@ class GameController {
         const player = this.desk.getPlayerById(this.playerNumber)
         console.log("\nplayer: ", player)
         let targetEntity = this.desk.getEntityByCoordinates(xPos,yPos);
-        if (this.nowAct && this.desk.validMove(player, targetEntity)) { //getPlayer(ид нужного игрока)
+        if (this.nowAct && this.desk.validMove(player, targetEntity)) {
             this.requestMove(this.desk.matrix[player.x][player.y], this.desk.matrix[targetEntity.x][targetEntity.y])
         }
     }
-
-
 
     EndOfGame() {
         let winner = !this.desk.getPlayerById(this.playerNumber).isDead()
@@ -199,8 +234,10 @@ class GameController {
             console.log('restart')
             //send to server want to restart
         }
-        else
+        else {
+            resetAfterGame()
             resetHtmlStates()
+        }
     }
 
     requestMove(first, second) {
@@ -212,4 +249,43 @@ class GameController {
         socket.emit('makeMove', roomId, obj) //need pass two args
     }
 
+}
+
+class GameControllerSingle extends GameController{
+    constructor(ssid, col, row) {
+        super(ssid, col, row, false)
+    }
+
+    interact(xPos, yPos) {
+        const myPlayer = this.desk.getPlayerById(0)
+        console.log("\nplayer: ", myPlayer)
+        let targetEntity = this.desk.getEntityByCoordinates(xPos,yPos);
+        if (this.desk.validMove(myPlayer, targetEntity)) { //getPlayer(ид нужного игрока)
+            this.desk.interact(this.desk.matrix[myPlayer.x][myPlayer.y], this.desk.matrix[targetEntity.x][targetEntity.y])
+            if (myPlayer.isDead())
+                this.EndOfGame()
+        }
+    }
+
+    EndOfGame() {
+        if (confirm("It is not great you can do.\nAgain kiddo nuh?")){
+            //call gameController.newCard() - еще не сделал)0
+            startSingl()
+        } else {
+            resetAfterGame()
+            resetHtmlStates()
+        }
+
+    }
+
+}
+
+function startSingl() {
+    prepaireBefGame()
+    singlGameController = new GameControllerSingle(parseInt( randomStr(10)),6, 6)
+    singlGameController.desk.spawnPlayer(0,5,5)
+    gameType = 'singl'
+    gameStart = true
+    document.addEventListener("mouseup", mouseUpHandler, false);
+    requestAnimationFrame(draw)
 }
