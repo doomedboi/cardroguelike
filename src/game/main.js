@@ -2,35 +2,23 @@ import {GameTable,Sprites} from "./classes.mjs";
 /*GLOBALS*/
 let canvas, ctx, canvasId
 let playerNumber, roomExist = true
-let roomid = 0
-
 let gameStart = false
 let multiplayerGameController
 let singlGameController
-let ssid
-let intervalForPlayers
 let gameType = 'none'
+
+//object holds seed
 class Smth {
     constructor() {
         this.seed = 0
 
     }
-
 }
 let smth = new Smth()
-function randomStr(len) {
-    let result           = '';
-    const characters       = '123456789';
-    const charactersLength = characters.length;
-    for ( let i = 0; i < len; i++ ) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return parseInt( result );
-}
 
 /*end globals*/
 
-let socket = io('http://localhost:3000',{'timeout':2000, 'connect timeout': 2000})
+let socket = io('http://localhost:3000')
 
 /* listen to init event with handler */
 socket.on('init', handleInit)
@@ -55,7 +43,6 @@ const newGameBtn = document.getElementById("multiplayerBtn")
 const codeInput = document.getElementById("joinGameId")
 const joinGameBtn = document.getElementById("joinGameBtn")
 const createdGameId = document.getElementById("createdGameId")
-//const singlBtn = document.getElementById("singlBtn")
 /*end of init */
 
 /* listeners */
@@ -106,11 +93,7 @@ function handleGameOver() {
 }
 
 function handleGetSSID(code) {
-    console.log('____', code)
     smth.seed = code
-
-    console.log('lllll')
-    console.log(code)
 }
 
 function generateSSID(room) {
@@ -147,8 +130,6 @@ function unhideMainPage() {
     startScreen.style.display = 'none'
     gameScreen.style.display = "block"
 }
-
-
 
 /* init game when players are ready */
 function initGame(row, col, ssid) {
@@ -300,9 +281,7 @@ class GameControllerSingle extends GameController{
             resetAfterGame()
             resetHtmlStates()
         }
-
     }
-
 }
 
 function startSingl() {
@@ -313,4 +292,14 @@ function startSingl() {
     gameStart = true
     document.addEventListener("mouseup", mouseUpHandler, false);
     requestAnimationFrame(draw)
+}
+
+function randomStr(len) {
+    let result           = '';
+    const characters       = '123456789';
+    const charactersLength = characters.length;
+    for ( let i = 0; i < len; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return parseInt( result );
 }
