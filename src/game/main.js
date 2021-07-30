@@ -136,8 +136,8 @@ function initGame(row, col, ssid) {
     const huge = 13371337
     generateSSID(codeInput.value)
     multiplayerGameController = new MultiplayerGameController(smth.seed, 6, 6, true,playerNumber)
-    multiplayerGameController.desk.spawnPlayer(0,0, 0)
-    multiplayerGameController.desk.spawnPlayer(1,5,5)
+    multiplayerGameController.desk.spawnPlayer(0,1, 1)
+    multiplayerGameController.desk.spawnPlayer(1,4,4)
     gameType = 'multiplayer'
     document.addEventListener("mouseup", mouseUpHandler, false);
     //intervalForPlayers = setInterval(()=> {socket.emit('customInRoom', codeInput.value)}, 3000)
@@ -153,7 +153,6 @@ function joinGame() {
     const roomId = codeInput.value
     socket.emit('joinRoom', roomId)
     prepaireBefGame()
-    socket.emit("checkValidRoom", roomId)
     console.log('send req from this local')
     //check room have 2 players
     //send req to init game
@@ -238,7 +237,7 @@ class MultiplayerGameController extends GameController{
         }
         else {
             socket.emit('forceDisconnect');
-            socket.emit('checkValidRoom', codeInput.value)
+            //socket.emit('checkValidRoom', codeInput.value)
             //socket.emit('clientDisconnect', codeInput.value)
             resetAfterGame()
             resetHtmlStates()
