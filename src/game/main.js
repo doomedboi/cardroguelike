@@ -8,8 +8,16 @@ let gameStart = false
 let multiplayerGameController
 let singlGameController
 let ssid
+let intervalForPlayers
 let gameType = 'none'
+class Smth {
+    constructor() {
+        this.seed = 0
 
+    }
+
+}
+let smth = new Smth()
 function randomStr(len) {
     let result           = '';
     const characters       = '123456789';
@@ -36,6 +44,10 @@ socket.on('mustMove', handleRequestMove)
 socket.on('generateGame', handleGenerateGame)
 socket.on('left', handleLeftUser)
 socket.on('getSSID', handleGetSSID)
+socket.on('closeGame', ()=> {
+    resetAfterGame()
+    resetHtmlStates()
+})
 /* end of init list */
 
 /* init html elems */
@@ -63,6 +75,8 @@ function handleGenerateGame() {
 
 function handleLeftUser() {
     alert("Your opponent has left the match")
+    resetHtmlStates()
+    resetAfterGame()
 }
 
 function handleRequestMove(state) {
@@ -94,13 +108,15 @@ function handleGameOver() {
 }
 
 function handleGetSSID(code) {
-    ssid = code
+    console.log('____', code)
+    smth.seed = code
+
     console.log('lllll')
     console.log(code)
 }
 
 function generateSSID(room) {
-    socket.emit('genSSID')
+    socket.emit('genSSID', codeInput.value)
 }
 
 function handleGameCode(code) {
@@ -137,13 +153,15 @@ function unhideMainPage() {
 /* init game when players are ready */
 function initGame(row, col, ssid) {
     const huge = 13371337
-    attemp++
-    multiplayerGameController = new MultiplayerGameController(Math.floor(attemp +  codeInput.value / 100 + huge ), 6, 6, true,playerNumber)
+    generateSSID(codeInput.value)
+    multiplayerGameController = new MultiplayerGameController(smth.seed, 6, 6, true,playerNumber)
     multiplayerGameController.desk.spawnPlayer(0,0, 0)
     multiplayerGameController.desk.spawnPlayer(1,5,5)
     gameType = 'multiplayer'
     document.addEventListener("mouseup", mouseUpHandler, false);
+    intervalForPlayers = setInterval(()=> {socket.emit('customInRoom', codeInput.value)}, 3000)
     gameStart = true
+    console.log(multiplayerGameController.ssid)
 }
 function startNewGame() {
     //need to create new socket.io room
@@ -199,6 +217,7 @@ function mouseUpHandler(e) {
 
 class GameController {
     constructor(ssid, col, row, bMultiplayer,playerNumber) {
+        this.ssid = 0
         Sprites.initial()
         this.desk = new GameTable(ssid,col,row,Sprites.tableImg,bMultiplayer,playerNumber);
         console.log(ssid)
@@ -229,15 +248,21 @@ class MultiplayerGameController extends GameController{
     EndOfGame() {
         let winner = !this.desk.getPlayerById(this.playerNumber).isDead()
         if (confirm(winner? "You win\nDo you want to replay?" : "You lose\nDo you want to replay?")){
+
             prepaireBefGame()
+            socket.emit('customInRoom', codeInput.value)
             socket.emit('generateGame', codeInput.value)
             console.log('restart')
+            socket.emit('checkValidRoom', codeInput.value)
             //send to server want to restart
         }
         else {
+            socket.emit('clientDisconnect', codeInput.value)
+            clearInterval(intervalForPlayers)
             resetAfterGame()
             resetHtmlStates()
         }
+        attemp++
     }
 
     requestMove(first, second) {

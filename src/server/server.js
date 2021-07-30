@@ -16,9 +16,36 @@ io.on('connection', client => {
     client.on('makeMove', handleMakeMove)
     client.on('generateGame', handleGenerateGame)
     client.on('gameOver', handleGameOver)
+    client.on('disconnecting', ()=> {
+        io.sockets.in(rooms[client.id]).emit('left')
+    })
+    client.on('checkValidRoom', (roomId)=> {
+        try {
+            const userCnt = io.sockets.adapter.rooms.get(roomId).size
+        } catch (e) {
+            client.emit('closeGame')
+        }
+    })
+    client.on('customInRoom', (roomId)=> {
+        console.log('room id:')
+        console.log(roomId)
+        /*let userCnt = io.sockets.adapter.rooms.get(roomId).size
+        console.log(userCnt)
+        console.log(userCnt)
+        if (userCnt < 2) {
+            client.emit('left')
+            console.log("im here======")
+        }*/
+    })
     client.on('disconnect', () => {
         console.log("des")
         io.sockets.in(rooms[client.id]).emit('left')
+    })
+
+    client.on('clientDisconnect', (room)=> {
+        console.log('xxxxx')
+        io.socketsLeave(room)
+        client.emit('closeGame')
     })
 
     client.on('genSSID', (room)=> {
@@ -41,6 +68,7 @@ io.on('connection', client => {
     function handleGenerateGame(room) {
         io.sockets.in(room).emit('generateGame')
     }
+
 
     function handleJoinRoom(roomId) {
         console.log(roomId)
