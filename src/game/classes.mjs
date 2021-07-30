@@ -83,7 +83,7 @@ export class GameTable {//класс игрового стола, и его со
     static CELLSIZE = 100;
     static XABSOLUTE = 220;//эти координаты относительно начала canvas, верхняя левая точка от которой рисуется все поле.
     static YABSOLUTE = 20;
-    constructor(seed, width, height, sprite = Sprites.tableImg,PlayerNumber,multiplayerMode = true) {
+    constructor(seed, width, height, sprite = Sprites.tableImg,multiplayerMode = true,PlayerNumber=0) {
         this.event = 0;//игровые события. 0 означает что сейчас нет событий, например 1 - боссфайт с боссом номер 1
         this.bossOnDesk = false;
         this.singleplayer = !multiplayerMode;
@@ -282,7 +282,7 @@ export class GameTable {//класс игрового стола, и его со
         let secondProperties = secondEntity.getProperties();
 
         //ВЫНЕСТИ СРАБАТЫВАЕНИЕ ЕВЕНТА В МЕЙН!!!!!!//
-        if(this.turn===10){this.event = 1};//костыль
+        if(this.turn===15){this.event = 1};//костыль
         //!!!!///
 
         if (firstEntity.EntityType === "Player") {
@@ -708,7 +708,7 @@ export class Trader extends Entity{
             }else{
                 player.gold -=price;
             }
-            return new Potion.generatePotion(x,y,desk,price);
+            return Potion.generatePotion(this.x,this.y,desk,price);
             }
         else if (player.attack<player.shield){
             price = player.gold;

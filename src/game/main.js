@@ -138,7 +138,7 @@ function unhideMainPage() {
 function initGame(row, col, ssid) {
     const huge = 13371337
     attemp++
-    multiplayerGameController = new MultiplayerGameController(Math.floor(attemp +  codeInput.value / 100 + huge ), 6, 6,playerNumber, true)
+    multiplayerGameController = new MultiplayerGameController(Math.floor(attemp +  codeInput.value / 100 + huge ), 6, 6, true,playerNumber)
     multiplayerGameController.desk.spawnPlayer(0,0, 0)
     multiplayerGameController.desk.spawnPlayer(1,5,5)
     gameType = 'multiplayer'
@@ -198,9 +198,9 @@ function mouseUpHandler(e) {
 }
 
 class GameController {
-    constructor(ssid, col, row, bMultiplayer) {
+    constructor(ssid, col, row, bMultiplayer,playerNumber) {
         Sprites.initial()
-        this.desk = new GameTable(ssid,col,row,Sprites.tableImg,bMultiplayer);
+        this.desk = new GameTable(ssid,col,row,Sprites.tableImg,bMultiplayer,playerNumber);
         console.log(ssid)
     }
 
@@ -210,8 +210,8 @@ class GameController {
 }
 
 class MultiplayerGameController extends GameController{
-    constructor(ssid, col, row, playerNumber ,bMultiplayer) {
-        super(ssid, col, row, bMultiplayer)
+    constructor(ssid, col, row ,bMultiplayer, playerNumber) {
+        super(ssid, col, row, bMultiplayer,playerNumber)
         this.playerNumber = playerNumber
         this.nowAct = (playerNumber === 1)
     }
