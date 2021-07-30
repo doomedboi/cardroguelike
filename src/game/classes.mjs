@@ -626,10 +626,16 @@ export class Player extends Character {    // Класс игрока, в про
         this.HUD = Sprites.playerHUD;
         this.experience = 0;
         this.gold = 0;
+        this.exptonextlvl = 15;
     }
     getReward(reward){
         this.gold += reward.gold;
         this.experience += reward.experience;
+        while(this.experience>this.exptonextlvl){
+            this.experience-=this.exptonextlvl;
+            this.maxhealth +=1;
+            this.exptonextlvl+=5;
+        }
     }
 
     draw(context){
@@ -662,10 +668,10 @@ export class Coins extends Entity {
 export class Weapon extends Entity {
     static generateWeapon(x,y,desk,power=0){
         if (power === 0){
-            power = desk.getPseudoRandomInt(10,2)
+            power = desk.getPseudoRandomInt(11,2)
         }
         let newWeapon = new Weapon(this.RandomCalls,x,y,0,power);
-        if(power<=3){
+        if(power<=4){
             newWeapon.sprite = Sprites.weapon1;
         }else if (power<=7){
             newWeapon.sprite = Sprites.weapon2;
