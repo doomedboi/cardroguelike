@@ -136,8 +136,8 @@ function initGame(row, col, ssid) {
     const huge = 13371337
     generateSSID(codeInput.value)
     multiplayerGameController = new MultiplayerGameController(smth.seed, 6, 6, true,playerNumber)
-    multiplayerGameController.desk.spawnPlayer(0,0, 0)
-    multiplayerGameController.desk.spawnPlayer(1,5,5)
+    multiplayerGameController.desk.spawnPlayer(0,1, 1)
+    multiplayerGameController.desk.spawnPlayer(1,4,4)
     gameType = 'multiplayer'
     document.addEventListener("mouseup", mouseUpHandler, false);
     //intervalForPlayers = setInterval(()=> {socket.emit('customInRoom', codeInput.value)}, 3000)
@@ -287,7 +287,7 @@ class GameControllerSingle extends GameController{
 function startSingl() {
     prepaireBefGame()
     singlGameController = new GameControllerSingle(parseInt( randomStr(10)),6, 6)
-    singlGameController.desk.spawnPlayer(0,5,5)
+    singlGameController.desk.spawnPlayer(0,2,3)
     gameType = 'singl'
     gameStart = true
     document.addEventListener("mouseup", mouseUpHandler, false);
