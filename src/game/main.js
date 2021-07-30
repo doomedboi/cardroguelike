@@ -3,7 +3,7 @@ import {GameTable,Sprites} from "./classes.mjs";
 let canvas, ctx, canvasId
 let playerNumber, roomExist = true
 let roomid = 0
-let attemp = 0
+
 let gameStart = false
 let multiplayerGameController
 let singlGameController
@@ -28,11 +28,9 @@ function randomStr(len) {
     return parseInt( result );
 }
 
-setInterval(()=> {
-    console.log(ssid)}, 4000)
 /*end globals*/
 
-const socket = io('http://localhost:3000')
+let socket = io('http://localhost:3000')
 
 /* listen to init event with handler */
 socket.on('init', handleInit)
@@ -45,8 +43,7 @@ socket.on('generateGame', handleGenerateGame)
 socket.on('left', handleLeftUser)
 socket.on('getSSID', handleGetSSID)
 socket.on('closeGame', ()=> {
-    resetAfterGame()
-    resetHtmlStates()
+    handleLeftUser()
 })
 /* end of init list */
 
@@ -77,6 +74,7 @@ function handleLeftUser() {
     alert("Your opponent has left the match")
     resetHtmlStates()
     resetAfterGame()
+    createdGameId.style.display = 'none'
 }
 
 function handleRequestMove(state) {
@@ -120,6 +118,7 @@ function generateSSID(room) {
 }
 
 function handleGameCode(code) {
+
     createdGameId.style.display = "block"
     alert(code)
     codeInput.value = code
@@ -139,6 +138,7 @@ function initCanvas() {
 }
 
 function prepaireBefGame() {
+    //socket.refresh()
     unhideMainPage()
     initCanvas()
 }
@@ -159,7 +159,7 @@ function initGame(row, col, ssid) {
     multiplayerGameController.desk.spawnPlayer(1,5,5)
     gameType = 'multiplayer'
     document.addEventListener("mouseup", mouseUpHandler, false);
-    intervalForPlayers = setInterval(()=> {socket.emit('customInRoom', codeInput.value)}, 3000)
+    //intervalForPlayers = setInterval(()=> {socket.emit('customInRoom', codeInput.value)}, 3000)
     gameStart = true
     console.log(multiplayerGameController.ssid)
 }
@@ -182,6 +182,8 @@ function joinGame() {
 function resetAfterGame() {
     gameStart = false;
     gameType = 'none'
+    multiplayerGameController = null
+    singlGameController = null
 }
 
 function resetHtmlStates() {
@@ -210,7 +212,7 @@ function mouseUpHandler(e) {
         let yPos = e.offsetY;
         if (gameType === 'singl')
             singlGameController.interact (xPos, yPos)
-        else
+        else if (multiplayerGameController)
             multiplayerGameController.interact (xPos, yPos)
     }
 }
@@ -248,21 +250,18 @@ class MultiplayerGameController extends GameController{
     EndOfGame() {
         let winner = !this.desk.getPlayerById(this.playerNumber).isDead()
         if (confirm(winner? "You win\nDo you want to replay?" : "You lose\nDo you want to replay?")){
-
             prepaireBefGame()
-            socket.emit('customInRoom', codeInput.value)
             socket.emit('generateGame', codeInput.value)
-            console.log('restart')
             socket.emit('checkValidRoom', codeInput.value)
-            //send to server want to restart
         }
         else {
-            socket.emit('clientDisconnect', codeInput.value)
-            clearInterval(intervalForPlayers)
+            socket.emit('forceDisconnect');
+            //socket.emit('checkValidRoom', codeInput.value)
+            //socket.emit('clientDisconnect', codeInput.value)
             resetAfterGame()
             resetHtmlStates()
+            window.location.reload()
         }
-        attemp++
     }
 
     requestMove(first, second) {

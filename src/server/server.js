@@ -11,17 +11,18 @@ const {FRAME} = require("./gConstans")
 const {randomStr} = require("./helpers")
 
 io.on('connection', client => {
+    console.log('hello')
     client.on('newGame', handleNewGame)
     client.on('joinRoom', handleJoinRoom)
     client.on('makeMove', handleMakeMove)
     client.on('generateGame', handleGenerateGame)
     client.on('gameOver', handleGameOver)
-    client.on('disconnecting', ()=> {
-        io.sockets.in(rooms[client.id]).emit('left')
-    })
+
+
     client.on('checkValidRoom', (roomId)=> {
         try {
             const userCnt = io.sockets.adapter.rooms.get(roomId).size
+
         } catch (e) {
             client.emit('closeGame')
         }
@@ -37,14 +38,14 @@ io.on('connection', client => {
             console.log("im here======")
         }*/
     })
+    client.on('forceDisconnect', function(){
+        client.disconnect()
+    });
     client.on('disconnect', () => {
-        console.log("des")
         io.sockets.in(rooms[client.id]).emit('left')
     })
 
     client.on('clientDisconnect', (room)=> {
-        console.log('xxxxx')
-        io.socketsLeave(room)
         client.emit('closeGame')
     })
 
@@ -92,10 +93,12 @@ io.on('connection', client => {
     }
 
     function handleNewGame() {
+        console.log('polychaet')
         let roomId = randomStr(10).toString()
         client.join(roomId)
         client.number = 1
         client.emit('init', 0)
+        console.log('pidoras server')
         console.log(io.sockets.adapter.rooms.has(roomId))
         rooms[client.id] = roomId
         //send back
