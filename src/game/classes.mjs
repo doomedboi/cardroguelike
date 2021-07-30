@@ -19,6 +19,9 @@ export const Sprites = { //здесь находятся все объекты �
     player2Img: new Image(),
     boss1: new Image(),
     monster1boss1: new Image(),
+    boss2: new Image(),
+    boss2coins1: new Image(),
+    boss2coins2: new Image(),
     monster1 : new Image(),
     monster2 : new Image(),
     monster3 : new Image(),
@@ -55,6 +58,9 @@ export const Sprites = { //здесь находятся все объекты �
         this.monster3.src = "resources/Necromancer.png";
         this.monster2.src = "resources/Vermin.png";
         this.boss1.src = "resources/Boss1.png";
+        this.boss2.src = "resources/Boss2.png";
+        this.boss2coins1.src = "resources/boss2coins1.png";
+        this.boss2coins2.src = "resources/boss2coins2.png";
         this.monster1boss1.src = "resources/Monster1Boss1.png";
         this.greenframe.src = "resources/Green.png";
         this.shield1.src = "resources/Shield1.png";
@@ -113,7 +119,23 @@ export class GameTable {//класс игрового стола, и его со
         return false
     }
     deleteEntity(someEntity, filingDirection = EmptyEntity.DIRECTION.ABOWE) {
-        if(this.matrix[someEntity.x][someEntity.y].id ==="Boss") {this.bossOnDesk = false; this.event = 0;}//костыль
+        if(this.matrix[someEntity.x][someEntity.y].id ==="Boss") {
+            if(this.event ===1){
+                this.event =2;
+                this.bossOnDesk = false
+            };
+            if(this.event===3){
+                for (let x = 0; x < this.width; x++) {
+                    for (let y = 0; y < this.height; y++) {
+                        if(this.matrix[x][y].id==="boss2coins1"){
+                            this.matrix[x][y].isMonsterGold = false;
+                        }
+                    }
+                }
+                this.event  = 4
+                this.bossOnDesk = false;
+            }
+        }//костыль
         this.matrix[someEntity.x][someEntity.y] = new EmptyEntity("someID", someEntity.x, someEntity.y, Sprites.emptyEntityImg, filingDirection);
     }
     moveEntity(movableEntity, x, y) {
@@ -275,6 +297,14 @@ export class GameTable {//класс игрового стола, и его со
             }else{
                 this.matrix[x][y] = Monster.generateMonster(x,y,this,0);
             }
+        }else if(this.event===3 && target===false){
+            if (!this.bossOnDesk){
+                this.matrix[x][y] = Monster.generateMonster(x,y,this,6);
+                this.matrix[x][y].id = "Boss";
+                this.bossOnDesk = true;
+            }else{
+                this.matrix[x][y] = new Coins('boss2coins1',x,y,Sprites.boss2coins1,this.getPseudoRandomInt(10,5),true);
+            }
         }
         return true;
     }
@@ -282,9 +312,9 @@ export class GameTable {//класс игрового стола, и его со
         let secondProperties = secondEntity.getProperties();
 
         //ВЫНЕСТИ СРАБАТЫВАЕНИЕ ЕВЕНТА В МЕЙН!!!!!!//
-        if(this.turn===15){this.event = 1};//костыль
+        if(this.turn>=5 && this.event ===0){this.event = 1};//костыль
         //!!!!///
-
+        if(this.event===2 && this.turn>=10){this.event =3};
         if (firstEntity.EntityType === "Player") {
             switch (secondEntity.EntityType) {
                 case "Player":
@@ -371,6 +401,22 @@ export class GameTable {//класс игрового стола, и его со
             return false; //---и---
         } else {
             return false; //---и---
+        }
+        if(this.event===3){
+            for (let x = 0; x < this.width; x++) {
+                for (let y = 0; y < this.height; y++) {
+                    if(this.matrix[x][y].id==="boss2coins1"){
+                        this.matrix[x][y].timer--;
+                        if(this.matrix[x][y].timer<=0){
+                            let power = this.matrix[x][y].countOfCoins;
+                            this.matrix[x][y] = Monster.generateMonster(x,y,this,-2);
+                            this.matrix[x][y].attack = power;
+                            this.matrix[x][y].health = power;
+                            this.matrix[x][y].maxhealth = power;
+                        }
+                    }
+                }
+            }
         }
         this.turn++;
         this.NearEntityes =false;
@@ -520,6 +566,9 @@ export class Character extends Entity {//от этого класса насле
 }
 export class Monster extends Character { //Класс монтров, в процессе реализации...
     static generateMonster(x,y,desk,tier = -1){
+        if(tier ===-2){
+            return new Monster(desk.RandomCalls+'boss2coins2',x,y,Sprites.boss2coins2,1,1,1,3)
+        }
         if(tier ===-1){
             tier = desk.getPseudoRandomInt(4,1);
         }
@@ -546,6 +595,13 @@ export class Monster extends Character { //Класс монтров, в про�
                 break;
             case 5:
                 newMonster.sprite = Sprites.boss1;
+                newMonster.id = "Boss"
+                newMonster.attack = 8;
+                newMonster.health = 12;
+                newMonster.maxhealth = 12;
+                break;
+            case 6:
+                newMonster.sprite = Sprites.boss2;
                 newMonster.id = "Boss"
                 newMonster.attack = 10;
                 newMonster.health = 15;
@@ -584,16 +640,23 @@ export class Player extends Character {    // Класс игрока, в про
     }
 }
 export class Coins extends Entity {
-    constructor(id, x, y, sprite = Sprites.coins, countOfCoins) {
+    constructor(id, x, y, sprite = Sprites.coins, countOfCoins,isMonsterGold = false) {
         super(id, x, y, sprite);
+        this.isMonsterGold = isMonsterGold;
         this.EntityType = "Coins";
         this.countOfCoins = countOfCoins;
+        this.timer = 5;
     }
     draw(context){
         super.draw(context)
         context.fillText("   ️" + this.countOfCoins,
             GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-40,
             GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  GameTable.CELLSIZE-5,)
+        if(this.isMonsterGold){
+            context.fillText("⌛" + this.timer,
+                GameTable.XABSOLUTE + this.x * GameTable.CELLSIZE + GameTable.CELLSIZE-60,
+                GameTable.YABSOLUTE + this.y * GameTable.CELLSIZE +  15,)
+        }
     }
 }
 export class Weapon extends Entity {
@@ -712,12 +775,14 @@ export class Trader extends Entity{
             }
         else if (player.attack<player.shield){
             price = player.gold;
-            player.gold = 0;
+            if(price>15){price = 15}
+            player.gold -=price;
             return Weapon.generateWeapon(this.x,this.y,desk,price);
         }
         else{
             price = player.gold;
-            player.gold = 0;
+            if(price>15){price = 15}
+            player.gold -=price;;
             return Shield.generateShield(this.x,this.y,desk,price);
         }
     }
