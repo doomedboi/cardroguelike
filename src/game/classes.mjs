@@ -97,7 +97,7 @@ export class GameTable {//класс игрового стола, и его со
         this.turn = 0;
         this.NearEntityes = false;
         this.RandomCalls = 0;
-        this.seed = seed;
+        this.seed = seed;//для отладки
         this.width = width;
         this.height = height;
         this.sprite = sprite;
@@ -236,7 +236,7 @@ export class GameTable {//класс игрового стола, и его со
         if (from!=0){
             return from+this.getPseudoRandomInt(to-from);
         }
-        let c = Math.pow((this.RandomCalls+this.seed),(this.RandomCalls+1)%10);
+        let c = Math.pow((this.RandomCalls+this.seed)%100,(this.RandomCalls+1)%10);
         let sum = 0;
         while(c!=0){
             sum+=c%10;
@@ -288,7 +288,6 @@ export class GameTable {//класс игрового стола, и его со
             default:
                 this.matrix[x][y] = Monster.generateMonster(x,y,this);
             }
-        this.RandomCalls++;
         }
         if (this.event ===1 && target === false){
             if (!this.bossOnDesk){
